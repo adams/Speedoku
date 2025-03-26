@@ -25,7 +25,11 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
     selectCell, 
     isSameHouseRowOrColumn,
     getPencilMarks,
-    getValidCandidates
+    getValidCandidates,
+    isCellAvailableForNumber,
+    setSelectedCell,
+    setSelectedNumber,
+    findFirstAvailableCellForNumber
   } = useSudoku();
   
   const isSelected = selectedCell ? selectedCell[0] === row && selectedCell[1] === col : false;
@@ -70,6 +74,14 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
     backgroundColor = '#f0f0f0'; // Grey background for highlighted cells
   }
 
+  // Determine if this cell is selectable - only if it's a valid cell for the currently selected number
+  const isValidForSelectedNumber = selectedNumber !== null && 
+                                  value === EMPTY_CELL && 
+                                  !isSameHouseRowOrColumn(row, col, selectedNumber);
+                                  
+  // Determine cursor style based on selectability
+  const cursorStyle = isValidForSelectedNumber ? 'pointer' : 'default';
+  
   // Generate the pencil marks grid
   const renderPencilMarks = () => {
     if (value !== EMPTY_CELL || (!autoPencilMode && pencilMarks.length === 0)) return null;
@@ -133,13 +145,30 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        cursor: 'pointer',
+        cursor: 'pointer', // Always show pointer cursor
         fontWeight: isInitial ? 'bold' : 'normal',
         backgroundColor, // This ensures the right background color is used
         position: 'relative',
         boxShadow: isSelected ? '0 0 0 2px #1890ff inset' : 'none',
       }}
-      onClick={() => selectCell(row, col)}
+      onClick={() => {
+        // If the cell has a value, select that number in the 3x3 grid
+        if (value !== EMPTY_CELL) {
+          setSelectedNumber(value);
+          
+          // Find the first available cell for this number
+          const firstAvailableCell = findFirstAvailableCellForNumber(value);
+          if (firstAvailableCell) {
+            setSelectedCell(firstAvailableCell);
+          }
+          return;
+        }
+        
+        // For empty cells, only allow selecting if they're valid for the currently selected number
+        if (selectedNumber !== null && isValidForSelectedNumber) {
+          selectCell(row, col);
+        }
+      }}
     >
       {renderPencilMarks()}
       
