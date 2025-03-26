@@ -77,7 +77,7 @@ const GameControls: React.FC = () => {
         className="control-button primary"
         onClick={handleNewGame}
       >
-        New Game
+        New Game (N)
       </button>
       
       <button 

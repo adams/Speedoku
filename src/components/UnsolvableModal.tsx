@@ -42,7 +42,7 @@ const UnsolvableModal: React.FC<UnsolvableModalProps> = () => {
           color: 'var(--text-primary)',
           lineHeight: 1.4
         }}>
-          You've put the puzzle into an unsolvable state. Click the New Game button at the top to start a new puzzle.
+          You've put the puzzle into an unsolvable state. Press <span style={{ fontWeight: 'bold' }}>N</span> or click the New Game button at the top to start a new puzzle.
         </p>
       </div>
     </div>

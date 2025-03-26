@@ -115,6 +115,12 @@ const SudokuBoard: React.FC = () => {
         return;
       }
       
+      // 'N' key - start a new game
+      if (e.key === 'n' || e.key === 'N') {
+        generateNewGame();
+        return;
+      }
+      
       // Toggle pencil mode with 'p' key
       if (e.key === 'p' || e.key === 'P') {
         cyclePencilMode();
@@ -262,6 +268,11 @@ const SudokuBoard: React.FC = () => {
             <div className="shortcut-group">
               <div className="shortcut-title">Pencil Marks</div>
               <div><span className="keyboard-shortcut">P</span> Toggle pencil mode</div>
+            </div>
+            
+            <div className="shortcut-group">
+              <div className="shortcut-title">Game</div>
+              <div><span className="keyboard-shortcut">N</span> New game</div>
             </div>
           </div>
           {showAutoSelectEffect && (
