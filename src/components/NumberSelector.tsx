@@ -90,15 +90,13 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
             <div
               key={num}
               onClick={() => {
-                const newNumber = selectedNumber === num ? null : num;
-                setSelectedNumber(newNumber);
+                // Always select the number (never deselect)
+                setSelectedNumber(num);
                 
-                // If selecting a new number (not deselecting), find and select first available cell
-                if (newNumber !== null) {
-                  const firstAvailableCell = findFirstAvailableCellForNumber(newNumber);
-                  if (firstAvailableCell) {
-                    setSelectedCell(firstAvailableCell);
-                  }
+                // Find and select first available cell
+                const firstAvailableCell = findFirstAvailableCellForNumber(num);
+                if (firstAvailableCell) {
+                  setSelectedCell(firstAvailableCell);
                 }
               }}
               style={{

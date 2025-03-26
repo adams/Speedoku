@@ -105,18 +105,6 @@ const SudokuBoard: React.FC = () => {
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // ESC key - remove selection state
-      if (e.key === 'Escape') {
-        if (selectedCell) {
-          // If a cell is selected, clear cell selection
-          setSelectedCell(null);
-        } else if (selectedNumber) {
-          // If no cell is selected but a number is, clear number selection
-          setSelectedNumber(null);
-        }
-        return;
-      }
-      
       // 'N' key - start a new game
       if (e.key === 'n' || e.key === 'N') {
         generateNewGame();
@@ -161,7 +149,7 @@ const SudokuBoard: React.FC = () => {
         }
       }
       
-      // Number keys for highlighting or inputting numbers (1-9)
+      // Number keys for highlighting only (1-9)
       if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey) {
         const num = parseInt(e.key);
         
@@ -172,19 +160,26 @@ const SudokuBoard: React.FC = () => {
           return;
         }
         
-        // If not actively editing a cell (no cell selected) or if Shift key is pressed without a cell selected,
-        // treat number keys as number selection for highlighting
-        if (!selectedCell) {
-          // Toggle number selection (if already selected, deselect it)
-          setSelectedNumber(selectedNumber === num ? null : num);
+        // If the pressed number matches the currently selected number AND a cell is selected,
+        // enter that value into the cell (same as pressing Enter)
+        if (num === selectedNumber && selectedCell) {
+          const [row, col] = selectedCell;
+          fillCell(row, col, num);
           return;
         }
         
-        // Otherwise, input the number or toggle pencil mark depending on mode
-        if (selectedCell) {
-          const [row, col] = selectedCell;
-          fillCell(row, col, num);
+        // Otherwise, select the number in the 3x3 grid (never deselect)
+        if (selectedNumber !== num) {
+          setSelectedNumber(num);
+          
+          // Find first available cell
+          const firstAvailableCell = findFirstAvailableCellForNumber(num);
+          if (firstAvailableCell) {
+            setSelectedCell(firstAvailableCell);
+          }
         }
+        
+        return;
       }
       // Handle backspace and delete keys for clearing
       else if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -201,7 +196,7 @@ const SudokuBoard: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedCell, selectedNumber, fillCell, clearCell, setSelectedCell, setSelectedNumber, jumpToAvailableCell, pencilMode, togglePencilMark, cyclePencilMode]);
+  }, [selectedCell, selectedNumber, fillCell, clearCell, setSelectedCell, setSelectedNumber, findFirstAvailableCellForNumber, jumpToAvailableCell, pencilMode, togglePencilMark, cyclePencilMode]);
   
   return (
     <div className="game-layout">
@@ -256,12 +251,12 @@ const SudokuBoard: React.FC = () => {
             <div className="shortcut-group">
               <div><span className="keyboard-shortcut">Tab</span> Next available cell</div>
               <div><span className="keyboard-shortcut">Shift</span> + <span className="keyboard-shortcut">Tab</span> Previous cell</div>
-              <div><span className="keyboard-shortcut">Esc</span> Clear selection</div>
             </div>
             
             <div className="shortcut-group">
-              <div><span className="keyboard-shortcut">1</span>-<span className="keyboard-shortcut">9</span> Select/input number</div>
-              <div><span className="keyboard-shortcut">Enter</span> Confirm number & move next</div>
+              <div><span className="keyboard-shortcut">1</span>-<span className="keyboard-shortcut">9</span> Select number from grid</div>
+              <div><span className="keyboard-shortcut">Enter</span> Enter selected number</div>
+              <div>Press selected number key to enter value</div>
               <div><span className="keyboard-shortcut">Backspace</span> Clear selected cell</div>
             </div>
             
