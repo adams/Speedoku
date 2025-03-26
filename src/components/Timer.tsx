@@ -20,8 +20,9 @@ const Timer: React.FC<TimerProps> = ({ isGameOver = false }) => {
     if (savedBestTime) {
       setBestTime(parseInt(savedBestTime, 10));
     } else {
-      // Reset best time when changing to a difficulty with no record
-      setBestTime(null);
+      // Initialize best time to zero for this difficulty if no record exists
+      setBestTime(0);
+      localStorage.setItem(getBestTimeKey(), '0');
     }
   }, [difficulty]);
 
