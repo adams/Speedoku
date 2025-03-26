@@ -6,7 +6,7 @@ interface NumberSelectorProps {
 }
 
 const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = false }) => {
-  const { selectedNumber, setSelectedNumber, grid, findFirstAvailableCellForNumber, setSelectedCell } = useSudoku();
+  const { selectedNumber, setSelectedNumber, grid, findFirstAvailableCellForNumber, setSelectedCell, selectedCell, fillCell } = useSudoku();
   
   // Create an array of numbers 1-9
   const numbers = Array.from({ length: 9 }, (_, i) => i + 1);
@@ -90,6 +90,14 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
             <div
               key={num}
               onClick={() => {
+                // If the number is already selected AND a cell is selected,
+                // fill the cell with that number (same as pressing the number key)
+                if (selectedNumber === num && selectedCell) {
+                  const [row, col] = selectedCell;
+                  fillCell(row, col, num);
+                  return;
+                }
+                
                 // Always select the number (never deselect)
                 setSelectedNumber(num);
                 
