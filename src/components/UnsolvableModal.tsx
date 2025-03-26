@@ -4,7 +4,7 @@ interface UnsolvableModalProps {
   onNewGame?: () => void;
 }
 
-const UnsolvableModal: React.FC<UnsolvableModalProps> = () => {
+const UnsolvableModal: React.FC<UnsolvableModalProps> = ({ onNewGame }) => {
   return (
     <div className="board-modal-overlay" style={{
       position: 'absolute',
@@ -38,12 +38,29 @@ const UnsolvableModal: React.FC<UnsolvableModalProps> = () => {
         }}>Game Over</h2>
         <p style={{ 
           fontSize: '14px',
-          marginBottom: '15px',
+          marginBottom: '20px',
           color: 'var(--text-primary)',
           lineHeight: 1.4
         }}>
-          You've put the puzzle into an unsolvable state. Press <span style={{ fontWeight: 'bold' }}>N</span> or click the New Game button at the top to start a new puzzle.
+          You've put the puzzle into an unsolvable state.
         </p>
+        <button 
+          onClick={onNewGame}
+          style={{
+            backgroundColor: '#1890ff',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '8px 16px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          New Game
+        </button>
       </div>
     </div>
   );
