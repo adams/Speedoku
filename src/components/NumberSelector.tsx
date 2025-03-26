@@ -35,6 +35,11 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
   
   const numberCounts = countNumbers();
   
+  // Calculate remaining numbers (9 - placed count)
+  const getRemainingCount = (num: number) => {
+    return 9 - numberCounts[num];
+  };
+  
   // Jump to the first available cell for the selected number
   const jumpToFirstAvailableCell = (num: number) => {
     const cell = findFirstAvailableCellForNumber(num);
@@ -43,17 +48,24 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
     }
   };
   
+  // Calculate cell size to match board width
+  // Sudoku board is 9x9 grid at 40px each = 360px
+  // For 3x3 grid with 2 gaps, each cell should be (360px - (2 * gap)) / 3
+  const gap = 6;
+  const cellWidth = (360 - (2 * gap)) / 3;
+  const cellHeight = 50; // Shorter rectangular cells
+  
   return (
-    <div className="number-selector-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+    <div className="number-selector-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '360px', margin: '0 auto' }}>
       <div
         className="number-selector"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 40px)',
-          gridTemplateRows: 'repeat(3, 40px)',
-          gap: '8px',
-          margin: '20px auto 10px',
-          width: 'fit-content',
+          gridTemplateColumns: `repeat(3, ${cellWidth}px)`,
+          gridTemplateRows: `repeat(3, ${cellHeight}px)`,
+          gap: `${gap}px`,
+          margin: '15px auto',
+          width: '360px',
           position: 'relative',
         }}
       >
@@ -62,10 +74,10 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
             className="auto-select-highlight"
             style={{
               position: 'absolute',
-              top: `-10px`,
-              left: `${(((selectedNumber - 1) % 3) * 48)}px`,
-              width: '40px',
-              height: '40px',
+              top: `-5px`,
+              left: `${(((selectedNumber - 1) % 3) * (cellWidth + gap))}px`,
+              width: `${cellWidth}px`,
+              height: `${cellHeight}px`,
               border: '2px solid #1890ff',
               borderRadius: '4px',
               animation: 'pulse 1s ease-in-out',
@@ -73,13 +85,14 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
               boxShadow: '0 0 8px rgba(24, 144, 255, 0.5)',
               pointerEvents: 'none',
               opacity: 0.7,
-              transform: `translateY(${Math.floor((selectedNumber - 1) / 3) * 48 + 10}px)`,
+              transform: `translateY(${Math.floor((selectedNumber - 1) / 3) * (cellHeight + gap) + 5}px)`,
             }}
           />
         )}
         {numbers.map((num) => {
           const isComplete = numberCounts[num] === 9;
           const hasAvailableSpot = findFirstAvailableCellForNumber(num) !== null;
+          const remaining = getRemainingCount(num);
           
           return (
             <div
@@ -88,8 +101,8 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
                 setSelectedNumber(selectedNumber === num ? null : num);
               }}
               style={{
-                width: '40px',
-                height: '40px',
+                width: `${cellWidth}px`,
+                height: `${cellHeight}px`,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -111,22 +124,23 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
                 position: 'relative',
                 animation: selectedNumber === num && showAutoSelectEffect ? 'pulse 1s ease-in-out' : 'none',
                 zIndex: 2,
+                fontSize: '26px',
               }}
             >
               <span>{num}</span>
               <div
                 style={{
                   position: 'absolute',
-                  top: '2px',
-                  right: '3px',
-                  fontSize: '8px',
+                  top: '4px',
+                  right: '6px',
+                  fontSize: '10px',
                   fontWeight: 'normal',
                   color: selectedNumber === num 
                     ? 'rgba(255, 255, 255, 0.7)' 
                     : isComplete ? '#52c41a' : '#999',
                 }}
               >
-                {numberCounts[num]}
+                {remaining}
               </div>
               {isComplete && (
                 <div 
@@ -159,29 +173,6 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
             </div>
           );
         })}
-      </div>
-      
-      {selectedNumber && findFirstAvailableCellForNumber(selectedNumber) && (
-        <button
-          onClick={() => jumpToFirstAvailableCell(selectedNumber)}
-          style={{
-            padding: '5px 10px',
-            backgroundColor: '#1890ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            marginBottom: '10px',
-          }}
-        >
-          Jump to available {selectedNumber}
-          <span style={{ fontSize: '0.7rem', marginLeft: '5px' }}>(Tab)</span>
-        </button>
-      )}
-      
-      <div className="keyboard-hint" style={{ fontSize: '0.75rem', color: '#666', textAlign: 'center' }}>
-        Tab: cycle forward | Shift+Tab: cycle backward | Enter: fill cell & move to next
       </div>
     </div>
   );

@@ -1,41 +1,41 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { createEmptyGrid, generatePuzzle, isPuzzleSolved, isValid, EMPTY_CELL, GRID_SIZE, BOX_SIZE, isBoardSolvable } from './sudokuUtils';
 
-interface SudokuContextType {
+export interface SudokuContextType {
   grid: number[][];
   initialGrid: number[][];
   selectedCell: [number, number] | null;
   setSelectedCell: (cell: [number, number] | null) => void;
   selectedNumber: number | null;
   isComplete: boolean;
+  isGameComplete: boolean;
   setIsComplete: (value: boolean) => void;
   isUnsolvable: boolean;
+  setIsUnsolvable: (value: boolean) => void;
   difficulty: 'easy' | 'medium' | 'hard';
   setDifficulty: (difficulty: 'easy' | 'medium' | 'hard') => void;
   setSelectedNumber: (num: number | null) => void;
-  startNewGame: () => void;
+  generateNewGame: () => void;
   selectCell: (row: number, col: number) => void;
-  fillCell: (value: number) => void;
-  clearCell: () => void;
-  checkCompletion: () => boolean;
+  selectNumber: (num: number) => void;
+  fillCell: (row: number, col: number, value: number) => void;
+  clearCell: (row: number, col: number) => void;
+  checkSolution: () => void;
   isValidPlacement: (row: number, col: number, num: number) => boolean;
   isSameHouseRowOrColumn: (row: number, col: number, num: number) => boolean;
   findFirstAvailableCellForNumber: (num: number) => [number, number] | null;
   findNextIncompleteNumber: () => number | null;
-  findNextAvailableCellForNumber: (
-    num: number, 
-    currentCell: [number, number] | null,
-    reverse?: boolean
-  ) => [number, number] | null;
+  findNextAvailableCellForNumber: (num: number, reverse?: boolean) => void;
+  isCellAvailableForNumber: (row: number, col: number, num: number) => boolean;
   pencilMarks: Record<string, number[]>;
   togglePencilMark: (row: number, col: number, num: number) => void;
   getPencilMarks: (row: number, col: number) => number[];
   clearPencilMarks: (row: number, col: number) => void;
   getValidCandidates: (row: number, col: number) => number[];
-  undoLastMove: () => void;
   checkIsSolvable: () => boolean;
-  resetBoard: () => void;
   startTime: number | null;
+  pencilMode: 'off' | 'auto';
+  cyclePencilMode: () => void;
 }
 
 const SudokuContext = createContext<SudokuContextType | undefined>(undefined);
@@ -52,6 +52,55 @@ interface SudokuProviderProps {
   children: ReactNode;
 }
 
+const validateSudoku = (grid: number[][]): boolean => {
+  // Check each row, column, and box for validity
+  const size = grid.length;
+  
+  // Check rows
+  for (let row = 0; row < size; row++) {
+    const seen = new Set<number>();
+    for (let col = 0; col < size; col++) {
+      const value = grid[row][col];
+      if (value !== EMPTY_CELL) {
+        if (seen.has(value)) return false;
+        seen.add(value);
+      }
+    }
+  }
+  
+  // Check columns
+  for (let col = 0; col < size; col++) {
+    const seen = new Set<number>();
+    for (let row = 0; row < size; row++) {
+      const value = grid[row][col];
+      if (value !== EMPTY_CELL) {
+        if (seen.has(value)) return false;
+        seen.add(value);
+      }
+    }
+  }
+  
+  // Check boxes
+  const boxSize = Math.sqrt(size);
+  for (let boxRow = 0; boxRow < boxSize; boxRow++) {
+    for (let boxCol = 0; boxCol < boxSize; boxCol++) {
+      const seen = new Set<number>();
+      
+      for (let row = boxRow * boxSize; row < (boxRow + 1) * boxSize; row++) {
+        for (let col = boxCol * boxSize; col < (boxCol + 1) * boxSize; col++) {
+          const value = grid[row][col];
+          if (value !== EMPTY_CELL) {
+            if (seen.has(value)) return false;
+            seen.add(value);
+          }
+        }
+      }
+    }
+  }
+  
+  return true;
+};
+
 export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const [grid, setGrid] = useState<number[][]>(createEmptyGrid());
   const [initialGrid, setInitialGrid] = useState<number[][]>(createEmptyGrid());
@@ -61,10 +110,10 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const [isUnsolvable, setIsUnsolvable] = useState<boolean>(false);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [pencilMarks, setPencilMarks] = useState<Record<string, number[]>>({});
-  const [moveHistory, setMoveHistory] = useState<number[][][]>([]);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [pencilMode, setPencilMode] = useState<'off' | 'auto'>('off');
 
-  const startNewGame = () => {
+  const generateNewGame = () => {
     const newPuzzle = generatePuzzle(difficulty);
     setGrid(JSON.parse(JSON.stringify(newPuzzle)));
     setInitialGrid(JSON.parse(JSON.stringify(newPuzzle)));
@@ -72,40 +121,50 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     setIsComplete(false);
     setIsUnsolvable(false);
     setPencilMarks({});
-    setMoveHistory([]);
     setStartTime(Date.now());
+    
+    // After setting up the new game, find and select the first incomplete number
+    setTimeout(() => {
+      const nextNumber = findNextIncompleteNumberInGrid(newPuzzle);
+      if (nextNumber) {
+        setSelectedNumber(nextNumber);
+        
+        // Find the first available cell for this number and select it
+        const firstAvailableCell = findFirstAvailableCellForNumberInGrid(nextNumber, newPuzzle);
+        if (firstAvailableCell) {
+          setSelectedCell(firstAvailableCell);
+        }
+      }
+    }, 0);
   };
 
   const selectCell = (row: number, col: number) => {
     setSelectedCell([row, col]);
   };
 
-  const fillCell = (value: number) => {
+  const fillCell = (row: number, col: number, value: number) => {
     if (!selectedCell) return;
     
-    const [row, col] = selectedCell;
+    const [currentRow, currentCol] = selectedCell;
     
     // Don't allow modifying initial puzzle cells
-    if (initialGrid[row][col] !== EMPTY_CELL) {
+    if (initialGrid[currentRow][currentCol] !== EMPTY_CELL) {
       return;
     }
     
     // Create a new copy of the grid
     const newGrid = grid.map(row => [...row]);
     
-    // Save current state to history before making changes
-    setMoveHistory(prev => [...prev, JSON.parse(JSON.stringify(grid))]);
-    
     // If the value is valid or empty, update the cell
-    if (value === EMPTY_CELL || isValid(newGrid, row, col, value)) {
+    if (value === EMPTY_CELL || isValid(newGrid, currentRow, currentCol, value)) {
       // Store the current number before filling the cell
       const currentNumber = selectedNumber;
       
       // Clear pencil marks for this cell
-      clearPencilMarks(row, col);
+      clearPencilMarks(currentRow, currentCol);
       
       // Update the grid
-      newGrid[row][col] = value;
+      newGrid[currentRow][currentCol] = value;
       
       // We need to update the grid state before finding the next cell
       setGrid(newGrid);
@@ -133,9 +192,33 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
         }
         
         // If this number is complete and it's the currently selected number,
-        // automatically select the next incomplete number
+        // automatically select the next sequential number
         if (count === 9 && selectedNumber === value) {
-          const nextNumber = findNextIncompleteNumberInGrid(newGrid);
+          // Find the next sequential number that isn't complete
+          let nextNumber = null;
+          
+          // Start with the next sequential number after the current one
+          for (let i = 1; i <= 9; i++) {
+            // Try numbers in sequence, starting from the next one after the current value
+            const nextSeq = ((value + i - 1) % 9) + 1;
+            
+            // Check if this number is already complete
+            let numCount = 0;
+            for (let r = 0; r < GRID_SIZE; r++) {
+              for (let c = 0; c < GRID_SIZE; c++) {
+                if (newGrid[r][c] === nextSeq) {
+                  numCount++;
+                }
+              }
+            }
+            
+            // If not complete, use this number
+            if (numCount < 9) {
+              nextNumber = nextSeq;
+              break;
+            }
+          }
+          
           if (nextNumber) {
             setSelectedNumber(nextNumber);
             
@@ -376,46 +459,33 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     return null; // No available spots for this number
   };
 
-  const clearCell = () => {
+  const clearCell = (row: number, col: number) => {
     if (!selectedCell) return;
     
-    const [row, col] = selectedCell;
+    const [currentRow, currentCol] = selectedCell;
     
     // Don't allow clearing initial puzzle cells
-    if (initialGrid[row][col] !== EMPTY_CELL) {
+    if (initialGrid[currentRow][currentCol] !== EMPTY_CELL) {
       return;
     }
     
     // Create a new copy of the grid
     const newGrid = grid.map(row => [...row]);
-    newGrid[row][col] = EMPTY_CELL;
+    newGrid[currentRow][currentCol] = EMPTY_CELL;
     setGrid(newGrid);
     setIsComplete(false);
   };
 
-  const checkCompletion = () => {
-    // First check if there are any empty cells
-    let hasEmptyCells = false;
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        if (grid[row][col] === EMPTY_CELL) {
-          hasEmptyCells = true;
-          break;
-        }
-      }
-      if (hasEmptyCells) break;
-    }
+  const checkSolution = () => {
+    // Check if the current grid is valid and complete
+    const isValid = validateSudoku(grid);
+    const isFilled = grid.every(row => row.every(cell => cell !== EMPTY_CELL));
     
-    if (hasEmptyCells) {
-      setIsComplete(false);
-      return false;
+    if (isValid && isFilled) {
+      setIsComplete(true);
+    } else if (!isValid) {
+      setIsUnsolvable(true);
     }
-    
-    // If no empty cells, consider it complete (simplified check)
-    // This is more reliable than the full validation in some cases
-    setIsComplete(true);
-    console.log("🎉 Puzzle completed! 🎉");
-    return true;
   };
 
   // Check if placement is valid based on Sudoku rules
@@ -536,13 +606,9 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   };
 
   // Find the next available cell for a given number, cycling through houses
-  const findNextAvailableCellForNumber = (
-    num: number, 
-    currentCell: [number, number] | null,
-    reverse?: boolean
-  ): [number, number] | null => {
+  const findNextAvailableCellForNumber = (num: number, reverse?: boolean) => {
     // If no current cell or number is complete, find the first available cell
-    if (!currentCell) {
+    if (!selectedCell) {
       return findFirstAvailableCellForNumber(num);
     }
     
@@ -560,7 +626,7 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
       return null; // Number is already filled completely
     }
     
-    const [currentRow, currentCol] = currentCell;
+    const [currentRow, currentCol] = selectedCell;
     
     // Get current house (box) coordinates
     const currentBoxRow = Math.floor(currentRow / BOX_SIZE);
@@ -768,30 +834,14 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     return solvable;
   };
   
-  // Undo the last move
-  const undoLastMove = () => {
-    if (moveHistory.length === 0) return;
-    
-    const previousGrid = moveHistory[moveHistory.length - 1];
-    setGrid(previousGrid);
-    setMoveHistory(prev => prev.slice(0, -1));
-    setIsUnsolvable(false);
-  };
-  
-  // Reset the board to its initial state
-  const resetBoard = () => {
-    setGrid(JSON.parse(JSON.stringify(initialGrid)));
-    setSelectedCell(null);
-    setIsComplete(false);
-    setIsUnsolvable(false);
-    setPencilMarks({});
-    setMoveHistory([]);
-    setStartTime(Date.now());
+  // Cycle through pencil modes: off -> auto -> off
+  const cyclePencilMode = () => {
+    setPencilMode(current => current === 'off' ? 'auto' : 'off');
   };
 
   // Start a new game when the component mounts
   useEffect(() => {
-    startNewGame();
+    generateNewGame();
   }, []);
   
   // Start the timer if it hasn't been started yet (for initial game load)
@@ -800,6 +850,12 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
       setStartTime(Date.now());
     }
   }, [grid, startTime]);
+
+  // Add isCellAvailableForNumber function
+  const isCellAvailableForNumber = (row: number, col: number, num: number): boolean => {
+    // Check if the cell is empty and we can place the number there
+    return grid[row][col] === EMPTY_CELL && isValid(grid, row, col, num);
+  };
 
   return (
     <SudokuContext.Provider
@@ -810,30 +866,34 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
         setSelectedCell,
         selectedNumber,
         isComplete,
+        isGameComplete: isComplete,
         setIsComplete,
         isUnsolvable,
+        setIsUnsolvable,
         difficulty,
         setDifficulty,
         setSelectedNumber,
-        startNewGame,
+        generateNewGame,
         selectCell,
+        selectNumber: (num: number) => setSelectedNumber(num),
         fillCell,
         clearCell,
-        checkCompletion,
+        checkSolution,
         isValidPlacement,
         isSameHouseRowOrColumn,
         findFirstAvailableCellForNumber,
         findNextIncompleteNumber,
         findNextAvailableCellForNumber,
+        isCellAvailableForNumber,
         pencilMarks,
         togglePencilMark,
         getPencilMarks,
         clearPencilMarks,
         getValidCandidates,
-        undoLastMove,
         checkIsSolvable,
-        resetBoard,
         startTime,
+        pencilMode,
+        cyclePencilMode,
       }}
     >
       {children}

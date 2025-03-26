@@ -7,8 +7,8 @@ interface SudokuCellProps {
   col: number;
   value: number;
   isInitial: boolean;
-  autoPencilMode?: boolean;
-  pencilMode?: 'off' | 'manual' | 'auto';
+  autoPencilMode: boolean;
+  pencilMode: 'off' | 'auto';
 }
 
 const SudokuCell: React.FC<SudokuCellProps> = ({ 
@@ -16,7 +16,7 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
   col, 
   value, 
   isInitial, 
-  autoPencilMode = false, 
+  autoPencilMode, 
   pencilMode = 'off' 
 }) => {
   const { 

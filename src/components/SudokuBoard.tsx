@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 import SudokuCell from './SudokuCell';
 import NumberSelector from './NumberSelector';
+import Timer from './Timer';
+import UnsolvableModal from './UnsolvableModal';
 import { EMPTY_CELL } from '../utils/sudokuUtils';
 
 // Define the pencil mode types
-type PencilModeType = 'off' | 'manual' | 'auto';
+type PencilModeType = 'off' | 'auto';
 
 const SudokuBoard: React.FC = () => {
   const { 
@@ -14,33 +16,26 @@ const SudokuBoard: React.FC = () => {
     fillCell, 
     clearCell, 
     selectedCell, 
-    checkCompletion, 
+    checkSolution,
     setSelectedCell,
     selectedNumber, 
     setSelectedNumber,
     findFirstAvailableCellForNumber,
     findNextIncompleteNumber,
     findNextAvailableCellForNumber,
-    togglePencilMark
+    togglePencilMark,
+    pencilMode,
+    cyclePencilMode,
+    isUnsolvable,
+    setIsUnsolvable,
+    generateNewGame
   } = useSudoku();
-  
-  // Enhanced pencil mode state with 3 options: off, manual, auto
-  const [pencilMode, setPencilMode] = useState<PencilModeType>('off');
   
   // State to track auto-selection animation
   const [showAutoSelectEffect, setShowAutoSelectEffect] = useState(false);
   
   // Track previous selected number to detect auto-selection
   const [prevSelectedNumber, setPrevSelectedNumber] = useState<number | null>(null);
-  
-  // Cycle through pencil modes: off -> manual -> auto -> off
-  const cyclePencilMode = () => {
-    setPencilMode(current => {
-      if (current === 'off') return 'manual';
-      if (current === 'manual') return 'auto';
-      return 'off';
-    });
-  };
   
   // Effect to detect when a number is automatically selected
   useEffect(() => {
@@ -70,7 +65,7 @@ const SudokuBoard: React.FC = () => {
       
       if (cycleToNext && selectedCell) {
         // Find the next available cell after the current one
-        cell = findNextAvailableCellForNumber(selectedNumber, selectedCell, reverse);
+        cell = findNextAvailableCellForNumber(selectedNumber, reverse);
       } else {
         // Find the first available cell for this number
         cell = findFirstAvailableCellForNumber(selectedNumber);
@@ -103,11 +98,11 @@ const SudokuBoard: React.FC = () => {
   useEffect(() => {
     // Small delay to allow the grid state to fully update
     const timer = setTimeout(() => {
-      checkCompletion();
+      checkSolution();
     }, 100);
     
     return () => clearTimeout(timer);
-  }, [grid, checkCompletion]);
+  }, [grid, checkSolution]);
   
   // Handle keyboard input
   useEffect(() => {
@@ -147,17 +142,10 @@ const SudokuBoard: React.FC = () => {
         
         // If both a cell and a number are selected, fill the cell with the number
         if (selectedCell && selectedNumber) {
-          // Store the current number before filling the cell
-          const currentNumber = selectedNumber;
+          const [row, col] = selectedCell;
           
-          // In manual pencil mode, toggle the pencil mark
-          if (pencilMode === 'manual') {
-            const [row, col] = selectedCell;
-            togglePencilMark(row, col, selectedNumber);
-          } else {
-            // Regular mode - fill the cell
-            fillCell(selectedNumber);
-          }
+          // Regular mode - fill the cell
+          fillCell(row, col, selectedNumber);
           
           return;
         }
@@ -190,18 +178,15 @@ const SudokuBoard: React.FC = () => {
         
         // Otherwise, input the number or toggle pencil mark depending on mode
         if (selectedCell) {
-          if (pencilMode === 'manual') {
-            const [row, col] = selectedCell;
-            togglePencilMark(row, col, num);
-          } else {
-            fillCell(num);
-          }
+          const [row, col] = selectedCell;
+          fillCell(row, col, num);
         }
       }
       // Handle backspace and delete keys for clearing
       else if (e.key === 'Backspace' || e.key === 'Delete') {
         if (selectedCell) {
-          clearCell();
+          const [row, col] = selectedCell;
+          clearCell(row, col);
         }
       }
     };
@@ -212,79 +197,93 @@ const SudokuBoard: React.FC = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedCell, selectedNumber, fillCell, clearCell, setSelectedCell, setSelectedNumber, jumpToAvailableCell, pencilMode, togglePencilMark]);
-  
-  // Get the label for the pencil mode button
-  const getPencilModeLabel = () => {
-    switch (pencilMode) {
-      case 'off': return 'Pencil: Off';
-      case 'manual': return 'Pencil: Manual';
-      case 'auto': return 'Pencil: Auto';
-      default: return 'Pencil Mode';
-    }
-  };
+  }, [selectedCell, selectedNumber, fillCell, clearCell, setSelectedCell, setSelectedNumber, jumpToAvailableCell, pencilMode, togglePencilMark, cyclePencilMode]);
   
   return (
-    <div>
-      <div 
-        className="sudoku-board"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(9, 40px)',
-          gridTemplateRows: 'repeat(9, 40px)',
-          gap: '0px',
-          border: '2px solid #333',
-          width: 'fit-content',
-          margin: '0 auto',
-        }}
-      >
-        {grid.map((row, rowIndex) => 
-          row.map((value, colIndex) => (
-            <SudokuCell
-              key={`${rowIndex}-${colIndex}`}
-              row={rowIndex}
-              col={colIndex}
-              value={value}
-              isInitial={initialGrid[rowIndex][colIndex] !== EMPTY_CELL}
-              autoPencilMode={pencilMode === 'auto'}
-              pencilMode={pencilMode}
-            />
-          ))
-        )}
-      </div>
-      <NumberSelector showAutoSelectEffect={showAutoSelectEffect} />
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
-        <button 
-          onClick={cyclePencilMode}
-          className={`pencil-mode-button ${pencilMode !== 'off' ? 'active' : ''} ${pencilMode === 'auto' ? 'auto' : ''}`}
+    <div className="game-layout">
+      <div className="game-main-content">
+        <div 
+          className="sudoku-board-container"
+          style={{
+            position: 'relative',
+            width: 'fit-content',
+            margin: '0 auto',
+          }}
         >
-          {getPencilModeLabel()} (P)
-        </button>
-      </div>
-      <div className="keyboard-instructions">
-        Click a cell and use numbers 1-9 to input. Press Backspace or Delete to clear.
-        <br />
-        Or select a number below to highlight cells. Press ESC to clear selection.
-        <br />
-        <strong>Keyboard shortcuts:</strong> Press 1-9 without cell selection to highlight numbers, ESC to clear selection.
-        <br />
-        Press <strong>Tab</strong> to cycle forward through available cells, <strong>Shift+Tab</strong> to cycle backwards.
-        <br />
-        Press <strong>Enter</strong> to fill the selected cell with the highlighted number and move to next available cell.
-        <br />
-        Press <strong>P</strong> to toggle pencil modes: Off → Manual → Auto. <strong>Shift+Number</strong> to add/remove a pencil mark.
-        {showAutoSelectEffect && (
           <div 
-            style={{ 
-              color: '#1890ff', 
-              fontWeight: 'bold',
-              marginTop: '5px',
-              animation: 'fadeIn 0.3s ease-in-out'
+            className="sudoku-board"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(9, 40px)',
+              gridTemplateRows: 'repeat(9, 40px)',
+              gap: '0px',
+              border: '2px solid #333',
+              width: 'fit-content',
+              margin: '0 auto',
             }}
           >
-            Number completed! Automatically selected next number.
+            {grid.map((row, rowIndex) => 
+              row.map((value, colIndex) => (
+                <SudokuCell
+                  key={`${rowIndex}-${colIndex}`}
+                  row={rowIndex}
+                  col={colIndex}
+                  value={value}
+                  isInitial={initialGrid[rowIndex][colIndex] !== EMPTY_CELL}
+                  autoPencilMode={pencilMode === 'auto'}
+                  pencilMode={pencilMode}
+                />
+              ))
+            )}
           </div>
-        )}
+          {isUnsolvable && (
+            <UnsolvableModal 
+              onNewGame={generateNewGame} 
+            />
+          )}
+        </div>
+        <NumberSelector showAutoSelectEffect={showAutoSelectEffect} />
+      </div>
+      
+      <div className="game-sidebar">
+        <Timer isGameOver={isUnsolvable} />
+        <div className="keyboard-instructions">
+          <div className="shortcuts-grid">
+            <div className="shortcut-group">
+              <div className="shortcut-title">Navigation</div>
+              <div><span className="keyboard-shortcut">Tab</span> Next available cell</div>
+              <div><span className="keyboard-shortcut">Shift</span> + <span className="keyboard-shortcut">Tab</span> Previous cell</div>
+              <div><span className="keyboard-shortcut">Esc</span> Clear selection</div>
+            </div>
+            
+            <div className="shortcut-group">
+              <div className="shortcut-title">Number Selection</div>
+              <div><span className="keyboard-shortcut">1</span>-<span className="keyboard-shortcut">9</span> Select/input number</div>
+              <div><span className="keyboard-shortcut">Enter</span> Confirm number & move next</div>
+              <div><span className="keyboard-shortcut">Backspace</span> Clear selected cell</div>
+            </div>
+            
+            <div className="shortcut-group">
+              <div className="shortcut-title">Pencil Marks</div>
+              <div><span className="keyboard-shortcut">P</span> Toggle pencil mode</div>
+            </div>
+          </div>
+          {showAutoSelectEffect && (
+            <div 
+              style={{ 
+                color: 'var(--primary-color)', 
+                fontWeight: 'bold',
+                marginTop: '10px',
+                animation: 'fadeIn 0.3s ease-in-out',
+                padding: '5px 10px',
+                backgroundColor: 'rgba(41, 98, 255, 0.1)',
+                borderRadius: '4px'
+              }}
+            >
+              Number completed! Automatically selected next number.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

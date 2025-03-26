@@ -1,120 +1,96 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 
 const GameControls: React.FC = () => {
   const { 
-    startNewGame, 
+    generateNewGame, 
     difficulty, 
     setDifficulty, 
-    undoLastMove, 
-    resetBoard, 
-    isUnsolvable 
+    isComplete,
+    pencilMode,
+    cyclePencilMode
   } = useSudoku();
   
-  const buttonStyle = {
-    padding: '8px 16px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-    marginLeft: '10px',
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDifficulty = e.target.value as 'easy' | 'medium' | 'hard';
+    setDifficulty(newDifficulty);
+  };
+
+  const handleNewGame = () => {
+    generateNewGame();
+    setShowConfirmation(false);
   };
   
+  // For the pencil mode button, update the button text and style based on the binary state
+  const getPencilModeButtonText = (mode: 'off' | 'auto') => {
+    switch (mode) {
+      case 'off': return 'Pencil Mode: Off';
+      case 'auto': return 'Pencil Mode: On';
+      default: return 'Pencil Mode';
+    }
+  };
+
+  // Update button styling for the simpler toggle
+  const getPencilModeButtonStyle = (mode: 'off' | 'auto') => {
+    const baseStyle = {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px',
+      padding: '8px 12px',
+      border: 'none',
+      borderRadius: '4px',
+      fontSize: '14px',
+      cursor: 'pointer',
+      fontWeight: mode === 'auto' ? 'bold' as const : 'normal' as const,
+      transition: 'all 0.2s ease'
+    };
+
+    switch (mode) {
+      case 'off':
+        return {
+          ...baseStyle,
+          backgroundColor: '#f0f0f0',
+          color: '#666'
+        };
+      case 'auto':
+        return {
+          ...baseStyle,
+          backgroundColor: 'var(--secondary-color)',
+          color: 'white'
+        };
+      default:
+        return baseStyle;
+    }
+  };
+
   return (
-    <div
-      className="game-controls"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        margin: '20px 0',
-        gap: '10px'
-      }}
-    >
-      <div
-        className="controls-row"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}
+    <div className="game-controls">
+      <select 
+        className="difficulty-selector" 
+        value={difficulty} 
+        onChange={handleDifficultyChange}
       >
-        <label htmlFor="difficulty">Difficulty:</label>
-        <select
-          id="difficulty"
-          value={difficulty}
-          onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
-          style={{
-            padding: '5px',
-            borderRadius: '4px',
-          }}
-        >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-        
-        <button
-          onClick={startNewGame}
-          style={buttonStyle}
-        >
-          New Game
-        </button>
-      </div>
-      
-      <div
-        className="controls-row"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginTop: '10px',
-        }}
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+
+      <button 
+        className="control-button primary"
+        onClick={handleNewGame}
       >
-        <button
-          onClick={undoLastMove}
-          style={{
-            ...buttonStyle,
-            backgroundColor: '#ff9800',
-          }}
-        >
-          Undo
-        </button>
-        
-        <button
-          onClick={resetBoard}
-          style={{
-            ...buttonStyle,
-            backgroundColor: '#f44336',
-          }}
-        >
-          Reset
-        </button>
-      </div>
+        New Game
+      </button>
       
-      {isUnsolvable && (
-        <div
-          style={{
-            backgroundColor: '#ffebee',
-            color: '#d32f2f',
-            padding: '10px 15px',
-            borderRadius: '4px',
-            marginTop: '15px',
-            fontWeight: 'bold',
-            border: '1px solid #f44336',
-            textAlign: 'center',
-            maxWidth: '500px',
-            animation: 'fadeIn 0.3s ease-in-out'
-          }}
-        >
-          <h3 style={{ margin: '0 0 8px 0' }}>⚠️ Unsolvable Board</h3>
-          <p style={{ margin: '0', fontSize: '0.9rem' }}>
-            The current board configuration cannot be solved. Try using the Undo button to go back to a valid state.
-          </p>
-        </div>
-      )}
+      <button 
+        onClick={cyclePencilMode}
+        className={`control-button ${pencilMode !== 'off' ? 'active' : ''} ${pencilMode === 'auto' ? 'auto' : ''}`}
+        style={getPencilModeButtonStyle(pencilMode as 'off' | 'auto')}
+      >
+        {getPencilModeButtonText(pencilMode as 'off' | 'auto')}
+      </button>
     </div>
   );
 };
