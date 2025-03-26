@@ -1,0 +1,206 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Arial', sans-serif;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.sudoku-cell {
+  transition: background-color 0.2s ease;
+}
+
+.sudoku-cell.selected {
+  background-color: white !important;
+}
+
+.sudoku-cell.initial {
+  color: #333;
+}
+
+.sudoku-cell:not(.initial) {
+  color: #1890ff;
+}
+
+.sudoku-cell.has-selected-number,
+.sudoku-cell.invalid-for-number {
+  background-color: #f0f0f0 !important;
+}
+
+.cursor-indicator {
+  position: absolute;
+  bottom: 4px;
+  width: 8px;
+  height: 2px;
+  background-color: #1890ff;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Add instructions for keyboard input */
+.keyboard-instructions {
+  margin-top: 20px;
+  color: #666;
+  font-size: 0.9em;
+  text-align: center;
+}
+
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.number-selector {
+  margin: 20px auto;
+}
+
+.number-selector div {
+  transition: all 0.2s ease;
+}
+
+.number-selector div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 500px) {
+  .app-container {
+    padding: 10px;
+  }
+}
+
+/* Celebration animations */
+@keyframes pop-in {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  80% {
+    transform: rotate(720deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(720deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.celebration-overlay.fade-out {
+  opacity: 0;
+}
+
+/* Celebration stars effect */
+.star {
+  position: absolute;
+  animation: twinkle 1.5s infinite;
+  color: gold;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+/* Add animations for auto-selection effect */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Add styles for the pencil mode button */
+.pencil-mode-button {
+  transition: all 0.3s ease;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  outline: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pencil-mode-button.active {
+  background-color: #1890ff;
+  color: white;
+}
+
+.pencil-mode-button:not(.active) {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* Enhance pencil marks styles */
+.pencil-mark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 9px;
+  color: #999;
+  transition: all 0.2s ease;
+}
+
+.pencil-mark.highlighted {
+  color: #1890ff;
+  font-weight: bold;
+}
+
+.pencil-mark.auto-pencil {
+  color: #a6a6a6;
+  font-size: 8px;
+}
+
+.pencil-mark.auto-pencil.highlighted {
+  color: #52c41a;
+  font-weight: bold;
+}
+
+/* Add styles for auto pencil mode button */
+.pencil-mode-button.auto {
+  background-color: #52c41a;
+  color: white;
+}
