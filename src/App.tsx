@@ -20,7 +20,7 @@ const AppContent: React.FC = () => {
     <div className="app-container">
       <header className="app-header">
         <h1>Speedoku</h1>
-        <p className="tagline">Think quickly. Place strategically.</p>
+        <p className="tagline">Keyboard-powered. Mouse-free. Lightning fast.</p>
       </header>
 
       <main className="app-main">
@@ -42,7 +42,7 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   useEffect(() => {
     // Update the document title
-    document.title = 'Speedoku - Think quickly. Place strategically.';
+    document.title = 'Speedoku - Keyboard-powered. Mouse-free. Lightning fast.';
   }, []);
 
   return (
