@@ -29,7 +29,8 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
     isCellAvailableForNumber,
     setSelectedCell,
     setSelectedNumber,
-    findFirstAvailableCellForNumber
+    findFirstAvailableCellForNumber,
+    grid
   } = useSudoku();
   
   const isSelected = selectedCell ? selectedCell[0] === row && selectedCell[1] === col : false;
@@ -68,9 +69,28 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
     borderTop: row === 0 ? '2px solid #333' : undefined,
   };
   
+  // Check if a number is complete (all 9 instances placed)
+  const isNumberComplete = (num: number): boolean => {
+    let count = 0;
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (grid[r][c] === num) {
+          count++;
+        }
+      }
+    }
+    return count === 9;
+  };
+  
   // Determine background color based on state
   let backgroundColor = 'white';
-  if (hasSelectedNumber || isInvalid) {
+  
+  // If the cell has a value and that number is complete, use green background
+  if (value !== EMPTY_CELL && isNumberComplete(value)) {
+    backgroundColor = '#f6ffed'; // Light green background for completed numbers
+  }
+  // Otherwise use standard highlighting
+  else if (hasSelectedNumber || isInvalid) {
     backgroundColor = '#f0f0f0'; // Grey background for highlighted cells
   }
 
@@ -149,7 +169,12 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
         fontWeight: isInitial ? 'bold' : 'normal',
         backgroundColor, // This ensures the right background color is used
         position: 'relative',
-        boxShadow: isSelected ? '0 0 0 2px #1890ff inset' : 'none',
+        boxShadow: isSelected 
+          ? '0 0 0 2px #1890ff inset' 
+          : (value !== EMPTY_CELL && isNumberComplete(value)) 
+            ? '0 0 0 1px #52c41a inset' 
+            : 'none',
+        color: (value !== EMPTY_CELL && isNumberComplete(value)) ? '#52c41a' : 'inherit',
       }}
       onClick={() => {
         // If the cell has a value, select that number in the 3x3 grid
