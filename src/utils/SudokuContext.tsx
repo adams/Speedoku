@@ -108,7 +108,7 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [isComplete, setIsComplete] = useState<boolean>(false);
   const [isUnsolvable, setIsUnsolvable] = useState<boolean>(false);
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
   const [pencilMarks, setPencilMarks] = useState<Record<string, number[]>>({});
   const [startTime, setStartTime] = useState<number | null>(null);
   const [pencilMode, setPencilMode] = useState<'off' | 'auto'>('off');
