@@ -153,6 +153,22 @@ const SudokuBoard: React.FC = () => {
       if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey) {
         const num = parseInt(e.key);
         
+        // Check if number is already complete (all 9 placed)
+        // Count occurrences of the number
+        let count = 0;
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (grid[r][c] === num) {
+              count++;
+            }
+          }
+        }
+        
+        // If number is complete, ignore key press
+        if (count === 9) {
+          return;
+        }
+        
         // Shift key for pencil marks when a cell is selected
         if (e.shiftKey && selectedCell) {
           const [row, col] = selectedCell;

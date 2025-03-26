@@ -90,6 +90,11 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
             <div
               key={num}
               onClick={() => {
+                // If number is complete (all 9 instances on board), ignore click
+                if (isComplete) {
+                  return;
+                }
+                
                 // If the number is already selected AND a cell is selected,
                 // fill the cell with that number (same as pressing the number key)
                 if (selectedNumber === num && selectedCell) {
@@ -114,7 +119,7 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                cursor: 'pointer',
+                cursor: isComplete ? 'default' : 'pointer',
                 fontWeight: 'bold',
                 border: isComplete 
                   ? '2px solid #52c41a' 
