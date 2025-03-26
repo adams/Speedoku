@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { createEmptyGrid, generatePuzzle, isPuzzleSolved, isValid, EMPTY_CELL, GRID_SIZE, BOX_SIZE, isBoardSolvable } from './sudokuUtils';
+import { createEmptyGrid, generatePuzzle, isValid, EMPTY_CELL, GRID_SIZE, BOX_SIZE, isBoardSolvable } from './sudokuUtils';
 
 export interface SudokuContextType {
   grid: number[][];
@@ -145,26 +145,25 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const fillCell = (row: number, col: number, value: number) => {
     if (!selectedCell) return;
     
-    const [currentRow, currentCol] = selectedCell;
-    
+    // Use the passed row and col parameters
     // Don't allow modifying initial puzzle cells
-    if (initialGrid[currentRow][currentCol] !== EMPTY_CELL) {
+    if (initialGrid[row][col] !== EMPTY_CELL) {
       return;
     }
     
     // Create a new copy of the grid
-    const newGrid = grid.map(row => [...row]);
+    const newGrid = grid.map(gridRow => [...gridRow]);
     
     // If the value is valid or empty, update the cell
-    if (value === EMPTY_CELL || isValid(newGrid, currentRow, currentCol, value)) {
+    if (value === EMPTY_CELL || isValid(newGrid, row, col, value)) {
       // Store the current number before filling the cell
       const currentNumber = selectedNumber;
       
       // Clear pencil marks for this cell
-      clearPencilMarks(currentRow, currentCol);
+      clearPencilMarks(row, col);
       
       // Update the grid
-      newGrid[currentRow][currentCol] = value;
+      newGrid[row][col] = value;
       
       // We need to update the grid state before finding the next cell
       setGrid(newGrid);
@@ -462,16 +461,15 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const clearCell = (row: number, col: number) => {
     if (!selectedCell) return;
     
-    const [currentRow, currentCol] = selectedCell;
-    
+    // Use the passed row and col parameters
     // Don't allow clearing initial puzzle cells
-    if (initialGrid[currentRow][currentCol] !== EMPTY_CELL) {
+    if (initialGrid[row][col] !== EMPTY_CELL) {
       return;
     }
     
     // Create a new copy of the grid
-    const newGrid = grid.map(row => [...row]);
-    newGrid[currentRow][currentCol] = EMPTY_CELL;
+    const newGrid = grid.map(gridRow => [...gridRow]);
+    newGrid[row][col] = EMPTY_CELL;
     setGrid(newGrid);
     setIsComplete(false);
   };

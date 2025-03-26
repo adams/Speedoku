@@ -6,9 +6,6 @@ import Timer from './Timer';
 import UnsolvableModal from './UnsolvableModal';
 import { EMPTY_CELL } from '../utils/sudokuUtils';
 
-// Define the pencil mode types
-type PencilModeType = 'off' | 'auto';
-
 const SudokuBoard: React.FC = () => {
   const { 
     grid, 
@@ -27,7 +24,6 @@ const SudokuBoard: React.FC = () => {
     pencilMode,
     cyclePencilMode,
     isUnsolvable,
-    setIsUnsolvable,
     generateNewGame
   } = useSudoku();
   

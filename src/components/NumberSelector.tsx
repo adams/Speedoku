@@ -6,7 +6,7 @@ interface NumberSelectorProps {
 }
 
 const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = false }) => {
-  const { selectedNumber, setSelectedNumber, grid, findFirstAvailableCellForNumber, setSelectedCell } = useSudoku();
+  const { selectedNumber, setSelectedNumber, grid, findFirstAvailableCellForNumber } = useSudoku();
   
   // Create an array of numbers 1-9
   const numbers = Array.from({ length: 9 }, (_, i) => i + 1);
@@ -38,14 +38,6 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
   // Calculate remaining numbers (9 - placed count)
   const getRemainingCount = (num: number) => {
     return 9 - numberCounts[num];
-  };
-  
-  // Jump to the first available cell for the selected number
-  const jumpToFirstAvailableCell = (num: number) => {
-    const cell = findFirstAvailableCellForNumber(num);
-    if (cell) {
-      setSelectedCell(cell);
-    }
   };
   
   // Calculate cell size to match board width

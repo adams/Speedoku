@@ -1,11 +1,10 @@
 import React from 'react';
-import { useSudoku } from '../utils/SudokuContext';
 
 interface UnsolvableModalProps {
-  onNewGame: () => void;
+  onNewGame?: () => void;
 }
 
-const UnsolvableModal: React.FC<UnsolvableModalProps> = ({ onNewGame }) => {
+const UnsolvableModal: React.FC<UnsolvableModalProps> = () => {
   return (
     <div className="board-modal-overlay" style={{
       position: 'absolute',

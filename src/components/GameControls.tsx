@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 
 const GameControls: React.FC = () => {
   const { 
     generateNewGame, 
     difficulty, 
-    setDifficulty, 
-    isComplete,
+    setDifficulty,
     pencilMode,
     cyclePencilMode
   } = useSudoku();
-  
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newDifficulty = e.target.value as 'easy' | 'medium' | 'hard';
@@ -20,7 +17,6 @@ const GameControls: React.FC = () => {
 
   const handleNewGame = () => {
     generateNewGame();
-    setShowConfirmation(false);
   };
   
   // For the pencil mode button, update the button text and style based on the binary state
