@@ -301,10 +301,16 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
       return false;
     }
     
-    // If no empty cells, consider it complete
-    setIsComplete(true);
-    console.log("🎉 Puzzle completed! 🎉");
-    return true;
+    // If no empty cells, validate the solution
+    const isValid = validateSudoku(gridState);
+    if (isValid) {
+      setIsComplete(true);
+      console.log("🎉 Puzzle completed! 🎉");
+      return true;
+    } else {
+      setIsComplete(false);
+      return false;
+    }
   };
   
   // Helper function that finds the next available cell using a specific grid state
@@ -479,10 +485,15 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     const isValid = validateSudoku(grid);
     const isFilled = grid.every(row => row.every(cell => cell !== EMPTY_CELL));
     
+    console.log("Check Solution - isValid:", isValid, "isFilled:", isFilled);
+    
     if (isValid && isFilled) {
+      console.log("SOLUTION IS VALID AND COMPLETE - Setting isComplete to true");
       setIsComplete(true);
-    } else if (!isValid) {
-      setIsUnsolvable(true);
+    } else {
+      // Grid is either invalid or not complete
+      console.log("Grid is not complete or invalid");
+      setIsComplete(false);
     }
   };
 
@@ -864,7 +875,7 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
         setSelectedCell,
         selectedNumber,
         isComplete,
-        isGameComplete: isComplete,
+        isGameComplete: isComplete && !isUnsolvable,
         setIsComplete,
         isUnsolvable,
         setIsUnsolvable,

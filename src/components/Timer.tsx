@@ -20,9 +20,8 @@ const Timer: React.FC<TimerProps> = ({ isGameOver = false }) => {
     if (savedBestTime) {
       setBestTime(parseInt(savedBestTime, 10));
     } else {
-      // Initialize best time to zero for this difficulty if no record exists
-      setBestTime(0);
-      localStorage.setItem(getBestTimeKey(), '0');
+      // Initialize best time to null if no record exists
+      setBestTime(null);
     }
   }, [difficulty]);
 
@@ -39,7 +38,8 @@ const Timer: React.FC<TimerProps> = ({ isGameOver = false }) => {
     // Start a new timer
     if (startTime) {
       timerRef.current = window.setInterval(() => {
-        setTime(prevTime => prevTime + 1);
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        setTime(elapsed);
       }, 1000);
     }
 
@@ -54,17 +54,27 @@ const Timer: React.FC<TimerProps> = ({ isGameOver = false }) => {
   useEffect(() => {
     // When game is complete, stop timer and check best time
     if (isGameComplete) {
+      console.log("Game complete detected in Timer! Current time:", time, "Best time:", bestTime);
+      
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        console.log("Timer stopped");
       }
 
-      // Update best time if current time is better or best time doesn't exist
-      if (time > 0 && (bestTime === null || time < bestTime)) {
-        setBestTime(time);
-        localStorage.setItem(getBestTimeKey(), time.toString());
+      // Calculate final time based on startTime to ensure accuracy
+      const finalTime = startTime ? Math.floor((Date.now() - startTime) / 1000) : time;
+      
+      // Update best time if current time is better or no best time exists
+      if (finalTime > 0 && (bestTime === null || finalTime < bestTime)) {
+        console.log("Updating best time from", bestTime, "to", finalTime);
+        setBestTime(finalTime);
+        localStorage.setItem(getBestTimeKey(), finalTime.toString());
+        console.log("Best time saved to localStorage with key:", getBestTimeKey(), "value:", finalTime.toString());
+      } else {
+        console.log("Not updating best time. Final time:", finalTime, "Best time:", bestTime);
       }
     }
-  }, [isGameComplete, time, bestTime, difficulty]);
+  }, [isGameComplete, startTime, difficulty]); // Include startTime but not time or bestTime
 
   // Stop the timer when game is over (unsolvable)
   useEffect(() => {

@@ -93,7 +93,9 @@ const SudokuBoard: React.FC = () => {
   // Check for completion on render and after any grid changes
   useEffect(() => {
     // Small delay to allow the grid state to fully update
+    console.log("Grid changed, checking solution after delay...");
     const timer = setTimeout(() => {
+      console.log("Calling checkSolution after grid change");
       checkSolution();
     }, 100);
     
@@ -252,26 +254,22 @@ const SudokuBoard: React.FC = () => {
         <div className="keyboard-instructions">
           <div className="shortcuts-grid">
             <div className="shortcut-group">
-              <div className="shortcut-title">Navigation</div>
               <div><span className="keyboard-shortcut">Tab</span> Next available cell</div>
               <div><span className="keyboard-shortcut">Shift</span> + <span className="keyboard-shortcut">Tab</span> Previous cell</div>
               <div><span className="keyboard-shortcut">Esc</span> Clear selection</div>
             </div>
             
             <div className="shortcut-group">
-              <div className="shortcut-title">Number Selection</div>
               <div><span className="keyboard-shortcut">1</span>-<span className="keyboard-shortcut">9</span> Select/input number</div>
               <div><span className="keyboard-shortcut">Enter</span> Confirm number & move next</div>
               <div><span className="keyboard-shortcut">Backspace</span> Clear selected cell</div>
             </div>
             
             <div className="shortcut-group">
-              <div className="shortcut-title">Pencil Marks</div>
               <div><span className="keyboard-shortcut">P</span> Toggle pencil mode</div>
             </div>
             
             <div className="shortcut-group">
-              <div className="shortcut-title">Game</div>
               <div><span className="keyboard-shortcut">N</span> New game</div>
             </div>
           </div>

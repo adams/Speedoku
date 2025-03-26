@@ -153,7 +153,14 @@ body {
 .shortcut-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.shortcut-group:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .shortcut-title {
