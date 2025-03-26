@@ -8,9 +8,17 @@ interface SudokuCellProps {
   value: number;
   isInitial: boolean;
   autoPencilMode?: boolean;
+  pencilMode?: 'off' | 'manual' | 'auto';
 }
 
-const SudokuCell: React.FC<SudokuCellProps> = ({ row, col, value, isInitial, autoPencilMode = false }) => {
+const SudokuCell: React.FC<SudokuCellProps> = ({ 
+  row, 
+  col, 
+  value, 
+  isInitial, 
+  autoPencilMode = false, 
+  pencilMode = 'off' 
+}) => {
   const { 
     selectedCell, 
     selectedNumber, 
@@ -41,8 +49,12 @@ const SudokuCell: React.FC<SudokuCellProps> = ({ row, col, value, isInitial, aut
                    (value !== EMPTY_CELL && value !== selectedNumber));
   
   // Should we show a preview (when cell is selected, empty, valid, and a number is selected in 3x3)
-  const showPreview = isSelected && value === EMPTY_CELL && selectedNumber !== null && 
-                     !isSameHouseRowOrColumn(row, col, selectedNumber);
+  // Don't show preview if in pencil mode
+  const showPreview = isSelected && 
+                     value === EMPTY_CELL && 
+                     selectedNumber !== null && 
+                     !isSameHouseRowOrColumn(row, col, selectedNumber) &&
+                     pencilMode === 'off'; // Only show preview when not in pencil mode
   
   // Determine border styling for grid lines
   const borderStyles = {

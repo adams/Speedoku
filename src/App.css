@@ -195,7 +195,7 @@ button:active:not(:disabled) {
 }
 
 .pencil-mark.auto-pencil.highlighted {
-  color: #52c41a;
+  color: #1890ff;
   font-weight: bold;
 }
 
@@ -203,4 +203,51 @@ button:active:not(:disabled) {
 .pencil-mode-button.auto {
   background-color: #52c41a;
   color: white;
+}
+
+/* Add styles for the Timer component */
+.timer-container {
+  margin: 10px auto 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+}
+
+.timer-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.current-time, .best-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.timer-label {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: bold;
+}
+
+.timer-value {
+  font-size: 1.2rem;
+  font-family: monospace;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.best-time .timer-value {
+  color: #52c41a;
+}
+
+.timer-value.not-set {
+  color: #999;
+  font-style: italic;
+  font-size: 1rem;
 }

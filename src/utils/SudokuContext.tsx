@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { createEmptyGrid, generatePuzzle, isPuzzleSolved, isValid, EMPTY_CELL, GRID_SIZE, BOX_SIZE } from './sudokuUtils';
+import { createEmptyGrid, generatePuzzle, isPuzzleSolved, isValid, EMPTY_CELL, GRID_SIZE, BOX_SIZE, isBoardSolvable } from './sudokuUtils';
 
 interface SudokuContextType {
   grid: number[][];
@@ -9,6 +9,7 @@ interface SudokuContextType {
   selectedNumber: number | null;
   isComplete: boolean;
   setIsComplete: (value: boolean) => void;
+  isUnsolvable: boolean;
   difficulty: 'easy' | 'medium' | 'hard';
   setDifficulty: (difficulty: 'easy' | 'medium' | 'hard') => void;
   setSelectedNumber: (num: number | null) => void;
@@ -31,6 +32,10 @@ interface SudokuContextType {
   getPencilMarks: (row: number, col: number) => number[];
   clearPencilMarks: (row: number, col: number) => void;
   getValidCandidates: (row: number, col: number) => number[];
+  undoLastMove: () => void;
+  checkIsSolvable: () => boolean;
+  resetBoard: () => void;
+  startTime: number | null;
 }
 
 const SudokuContext = createContext<SudokuContextType | undefined>(undefined);
@@ -53,8 +58,11 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [isComplete, setIsComplete] = useState<boolean>(false);
+  const [isUnsolvable, setIsUnsolvable] = useState<boolean>(false);
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   const [pencilMarks, setPencilMarks] = useState<Record<string, number[]>>({});
+  const [moveHistory, setMoveHistory] = useState<number[][][]>([]);
+  const [startTime, setStartTime] = useState<number | null>(null);
 
   const startNewGame = () => {
     const newPuzzle = generatePuzzle(difficulty);
@@ -62,6 +70,10 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     setInitialGrid(JSON.parse(JSON.stringify(newPuzzle)));
     setSelectedCell(null);
     setIsComplete(false);
+    setIsUnsolvable(false);
+    setPencilMarks({});
+    setMoveHistory([]);
+    setStartTime(Date.now());
   };
 
   const selectCell = (row: number, col: number) => {
@@ -81,6 +93,9 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     // Create a new copy of the grid
     const newGrid = grid.map(row => [...row]);
     
+    // Save current state to history before making changes
+    setMoveHistory(prev => [...prev, JSON.parse(JSON.stringify(grid))]);
+    
     // If the value is valid or empty, update the cell
     if (value === EMPTY_CELL || isValid(newGrid, row, col, value)) {
       // Store the current number before filling the cell
@@ -95,8 +110,18 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
       // We need to update the grid state before finding the next cell
       setGrid(newGrid);
       
-      // Check if the number is now complete
+      // Check if the board is still solvable after this move
       if (value !== EMPTY_CELL) {
+        // When making a real move (not clearing), check solvability
+        setTimeout(() => {
+          const solvable = isBoardSolvable(newGrid);
+          setIsUnsolvable(!solvable);
+          
+          if (!solvable) {
+            console.warn("The board is now unsolvable!");
+          }
+        }, 0);
+        
         // Count occurrences of the number after filling
         let count = 0;
         for (let r = 0; r < GRID_SIZE; r++) {
@@ -736,10 +761,45 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     return candidates;
   };
 
+  // Check if the current board is solvable
+  const checkIsSolvable = () => {
+    const solvable = isBoardSolvable(grid);
+    setIsUnsolvable(!solvable);
+    return solvable;
+  };
+  
+  // Undo the last move
+  const undoLastMove = () => {
+    if (moveHistory.length === 0) return;
+    
+    const previousGrid = moveHistory[moveHistory.length - 1];
+    setGrid(previousGrid);
+    setMoveHistory(prev => prev.slice(0, -1));
+    setIsUnsolvable(false);
+  };
+  
+  // Reset the board to its initial state
+  const resetBoard = () => {
+    setGrid(JSON.parse(JSON.stringify(initialGrid)));
+    setSelectedCell(null);
+    setIsComplete(false);
+    setIsUnsolvable(false);
+    setPencilMarks({});
+    setMoveHistory([]);
+    setStartTime(Date.now());
+  };
+
   // Start a new game when the component mounts
   useEffect(() => {
     startNewGame();
   }, []);
+  
+  // Start the timer if it hasn't been started yet (for initial game load)
+  useEffect(() => {
+    if (grid && grid[0].some(cell => cell !== EMPTY_CELL) && !startTime) {
+      setStartTime(Date.now());
+    }
+  }, [grid, startTime]);
 
   return (
     <SudokuContext.Provider
@@ -751,6 +811,7 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
         selectedNumber,
         isComplete,
         setIsComplete,
+        isUnsolvable,
         difficulty,
         setDifficulty,
         setSelectedNumber,
@@ -769,6 +830,10 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
         getPencilMarks,
         clearPencilMarks,
         getValidCandidates,
+        undoLastMove,
+        checkIsSolvable,
+        resetBoard,
+        startTime,
       }}
     >
       {children}

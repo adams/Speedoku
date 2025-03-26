@@ -173,16 +173,16 @@ const SudokuBoard: React.FC = () => {
       if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey) {
         const num = parseInt(e.key);
         
-        // Alt key for pencil marks
-        if (e.altKey && selectedCell) {
+        // Shift key for pencil marks when a cell is selected
+        if (e.shiftKey && selectedCell) {
           const [row, col] = selectedCell;
           togglePencilMark(row, col, num);
           return;
         }
         
-        // If not actively editing a cell (no cell selected) or if Shift key is pressed,
+        // If not actively editing a cell (no cell selected) or if Shift key is pressed without a cell selected,
         // treat number keys as number selection for highlighting
-        if (!selectedCell || e.shiftKey) {
+        if (!selectedCell) {
           // Toggle number selection (if already selected, deselect it)
           setSelectedNumber(selectedNumber === num ? null : num);
           return;
@@ -247,6 +247,7 @@ const SudokuBoard: React.FC = () => {
               value={value}
               isInitial={initialGrid[rowIndex][colIndex] !== EMPTY_CELL}
               autoPencilMode={pencilMode === 'auto'}
+              pencilMode={pencilMode}
             />
           ))
         )}
@@ -271,7 +272,7 @@ const SudokuBoard: React.FC = () => {
         <br />
         Press <strong>Enter</strong> to fill the selected cell with the highlighted number and move to next available cell.
         <br />
-        Press <strong>P</strong> to toggle pencil modes: Off → Manual → Auto. <strong>Alt+Number</strong> to add/remove a pencil mark.
+        Press <strong>P</strong> to toggle pencil modes: Off → Manual → Auto. <strong>Shift+Number</strong> to add/remove a pencil mark.
         {showAutoSelectEffect && (
           <div 
             style={{ 

@@ -2,7 +2,14 @@ import React from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 
 const GameControls: React.FC = () => {
-  const { startNewGame, difficulty, setDifficulty } = useSudoku();
+  const { 
+    startNewGame, 
+    difficulty, 
+    setDifficulty, 
+    undoLastMove, 
+    resetBoard, 
+    isUnsolvable 
+  } = useSudoku();
   
   const buttonStyle = {
     padding: '8px 16px',
@@ -56,6 +63,58 @@ const GameControls: React.FC = () => {
           New Game
         </button>
       </div>
+      
+      <div
+        className="controls-row"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginTop: '10px',
+        }}
+      >
+        <button
+          onClick={undoLastMove}
+          style={{
+            ...buttonStyle,
+            backgroundColor: '#ff9800',
+          }}
+        >
+          Undo
+        </button>
+        
+        <button
+          onClick={resetBoard}
+          style={{
+            ...buttonStyle,
+            backgroundColor: '#f44336',
+          }}
+        >
+          Reset
+        </button>
+      </div>
+      
+      {isUnsolvable && (
+        <div
+          style={{
+            backgroundColor: '#ffebee',
+            color: '#d32f2f',
+            padding: '10px 15px',
+            borderRadius: '4px',
+            marginTop: '15px',
+            fontWeight: 'bold',
+            border: '1px solid #f44336',
+            textAlign: 'center',
+            maxWidth: '500px',
+            animation: 'fadeIn 0.3s ease-in-out'
+          }}
+        >
+          <h3 style={{ margin: '0 0 8px 0' }}>⚠️ Unsolvable Board</h3>
+          <p style={{ margin: '0', fontSize: '0.9rem' }}>
+            The current board configuration cannot be solved. Try using the Undo button to go back to a valid state.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

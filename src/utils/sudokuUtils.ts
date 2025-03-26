@@ -165,4 +165,57 @@ const isBoxValid = (grid: number[][], index: number): boolean => {
     }
   }
   return true;
-}; 
+};
+
+// Check if the current board state is still solvable
+export const isBoardSolvable = (grid: number[][]): boolean => {
+  // Create a deep copy of the grid for solving attempts
+  const gridCopy = grid.map(row => [...row]);
+  
+  // Try to solve the current grid state
+  return checkSolvability(gridCopy);
+};
+
+// Solver using backtracking algorithm to check solvability
+function checkSolvability(grid: number[][]): boolean {
+  const emptyCell = findEmptyCell(grid);
+  
+  // If no empty cell is found, the puzzle is solved
+  if (!emptyCell) {
+    return true;
+  }
+  
+  const [row, col] = emptyCell;
+  
+  // Try placing each number 1-9
+  for (let num = 1; num <= 9; num++) {
+    // Check if placing this number is valid
+    if (isValid(grid, row, col, num)) {
+      // Place the number
+      grid[row][col] = num;
+      
+      // Recursively try to solve the rest of the puzzle
+      if (checkSolvability(grid)) {
+        return true;
+      }
+      
+      // If placing this number doesn't lead to a solution, backtrack
+      grid[row][col] = 0;
+    }
+  }
+  
+  // If no number leads to a solution, this configuration is unsolvable
+  return false;
+}
+
+// Helper function to find an empty cell in the grid
+function findEmptyCell(grid: number[][]): [number, number] | null {
+  for (let row = 0; row < GRID_SIZE; row++) {
+    for (let col = 0; col < GRID_SIZE; col++) {
+      if (grid[row][col] === EMPTY_CELL) {
+        return [row, col];
+      }
+    }
+  }
+  return null;
+} 
