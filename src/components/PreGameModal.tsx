@@ -64,7 +64,7 @@ const PreGameModal: React.FC<PreGameModalProps> = ({ onStartGame }) => {
 
   return (
     <div className="board-modal-overlay" style={{
-      position: 'fixed',
+      position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
@@ -73,7 +73,7 @@ const PreGameModal: React.FC<PreGameModalProps> = ({ onStartGame }) => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1000,
+      zIndex: 100,
       backdropFilter: 'blur(2px)'
     }}>
       <div className="modal-content" style={{

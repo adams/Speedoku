@@ -344,7 +344,7 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
     <div className="game-layout">
       <div className="game-main-content">
         <div 
-          className="sudoku-board-container"
+          className="game-play-area"
           style={{
             position: 'relative',
             width: 'fit-content',
@@ -352,31 +352,42 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
           }}
         >
           <div 
-            className="sudoku-board"
+            className="sudoku-board-container"
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(9, 40px)',
-              gridTemplateRows: 'repeat(9, 40px)',
-              gap: '0px',
-              border: '2px solid #333',
+              position: 'relative',
               width: 'fit-content',
               margin: '0 auto',
             }}
           >
-            {grid.map((row, rowIndex) => 
-              row.map((value, colIndex) => (
-                <SudokuCell
-                  key={`${rowIndex}-${colIndex}`}
-                  row={rowIndex}
-                  col={colIndex}
-                  value={value}
-                  isInitial={initialGrid[rowIndex][colIndex] !== EMPTY_CELL}
-                  autoPencilMode={pencilMode === 'auto'}
-                  pencilMode={pencilMode}
-                />
-              ))
-            )}
+            <div 
+              className="sudoku-board"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(9, 40px)',
+                gridTemplateRows: 'repeat(9, 40px)',
+                gap: '0px',
+                border: '2px solid #333',
+                width: 'fit-content',
+                margin: '0 auto',
+              }}
+            >
+              {grid.map((row, rowIndex) => 
+                row.map((value, colIndex) => (
+                  <SudokuCell
+                    key={`${rowIndex}-${colIndex}`}
+                    row={rowIndex}
+                    col={colIndex}
+                    value={value}
+                    isInitial={initialGrid[rowIndex][colIndex] !== EMPTY_CELL}
+                    autoPencilMode={pencilMode === 'auto'}
+                    pencilMode={pencilMode}
+                  />
+                ))
+              )}
+            </div>
           </div>
+          <NumberSelector />
+          
           {isUnsolvable && (
             <UnsolvableModal 
               onNewGame={handleUnsolvableModalDismiss} 
@@ -394,7 +405,6 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
             onNewGameRequested={() => setShowPreGameModal(true)} 
           />
         </div>
-        <NumberSelector />
       </div>
       
       <div className="game-sidebar">
