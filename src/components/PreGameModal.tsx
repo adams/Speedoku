@@ -93,14 +93,6 @@ const PreGameModal: React.FC<PreGameModalProps> = ({ onStartGame }) => {
           marginBottom: '10px',
           fontSize: '28px'
         }}>Speedoku</h1>
-        <p style={{ 
-          fontSize: '16px',
-          marginBottom: '25px',
-          color: 'var(--text-primary)',
-          lineHeight: 1.4
-        }}>
-          Keyboard-powered. Mouse-free. Lightning fast.
-        </p>
         
         <div style={{ marginBottom: '20px' }}>
           <label 

@@ -11,7 +11,6 @@ const AppContent: React.FC = () => {
     <div className="app-container">
       <header className="app-header">
         <h1>Speedoku</h1>
-        <p className="tagline">Keyboard-powered. Mouse-free. Lightning fast.</p>
       </header>
 
       <main className="app-main">
@@ -21,7 +20,7 @@ const AppContent: React.FC = () => {
       </main>
 
       <footer className="app-footer">
-        <p>&copy; {new Date().getFullYear()} Speedoku - The fastest way to solve Sudoku</p>
+        <p>&copy; {new Date().getFullYear()} Speedoku - A rogue-like puzzle game by Mike Adams</p>
       </footer>
     </div>
   )
@@ -30,7 +29,7 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   useEffect(() => {
     // Update the document title
-    document.title = 'Speedoku - Keyboard-powered. Mouse-free. Lightning fast.';
+    document.title = 'Speedoku';
   }, []);
 
   return (
