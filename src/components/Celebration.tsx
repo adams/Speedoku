@@ -8,14 +8,35 @@ interface CelebrationProps {
 }
 
 const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequested }) => {
-  const { isComplete, setIsComplete } = useSudoku();
+  const { isComplete, setIsComplete, startTime } = useSudoku();
   const [showModal, setShowModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [safeguardTimer, setSafeguardTimer] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  // This safeguard prevents the celebration modal from appearing too soon after a new game starts
+  useEffect(() => {
+    if (startTime) {
+      // Set a safeguard flag for 10 seconds after a new game starts
+      const timerId = window.setTimeout(() => {
+        setSafeguardTimer(null);
+      }, 10000);
+      
+      setSafeguardTimer(timerId);
+      
+      return () => {
+        if (timerId) window.clearTimeout(timerId);
+      };
+    }
+  }, [startTime]);
 
   useEffect(() => {
-    if (isComplete) {
+    // Only show the celebration if:
+    // 1. isComplete is true
+    // 2. We're not in the safeguard period (recently started game)
+    // 3. The game has been running for at least 5 seconds
+    if (isComplete && safeguardTimer === null && startTime && Date.now() - startTime > 5000) {
       // Trigger confetti effect
       const duration = 3000;
       const animationEnd = Date.now() + duration;
@@ -83,7 +104,7 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequeste
         }
       };
     }
-  }, [isComplete]);
+  }, [isComplete, safeguardTimer, startTime]);
 
   // Reset modal state when isComplete changes to false
   useEffect(() => {
