@@ -12,8 +12,8 @@ export interface SudokuContextType {
   setIsComplete: (value: boolean) => void;
   isUnsolvable: boolean;
   setIsUnsolvable: (value: boolean) => void;
-  difficulty: 'easy' | 'medium' | 'hard';
-  setDifficulty: (difficulty: 'easy' | 'medium' | 'hard') => void;
+  difficulty: 'easy' | 'medium' | 'hard' | 'expert';
+  setDifficulty: (difficulty: 'easy' | 'medium' | 'hard' | 'expert') => void;
   setSelectedNumber: (num: number | null) => void;
   generateNewGame: () => void;
   selectCell: (row: number, col: number) => void;
@@ -109,10 +109,10 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
   const [isComplete, setIsComplete] = useState<boolean>(false);
   const [isUnsolvable, setIsUnsolvable] = useState<boolean>(false);
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | 'expert'>('medium');
   const [pencilMarks, setPencilMarks] = useState<Record<string, number[]>>({});
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [pencilMode, setPencilMode] = useState<'off' | 'auto'>('off');
+  const [pencilMode, setPencilMode] = useState<'off' | 'auto'>('auto');
 
   const generateNewGame = () => {
     // First completely reset the unsolvable state to ensure clean start

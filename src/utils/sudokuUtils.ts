@@ -75,7 +75,7 @@ const solveSudoku = (grid: number[][]): boolean => {
 };
 
 // Generate a Sudoku puzzle by removing numbers from a solved grid
-export const generatePuzzle = (difficulty: 'easy' | 'medium' | 'hard'): number[][] => {
+export const generatePuzzle = (difficulty: 'easy' | 'medium' | 'hard' | 'expert'): number[][] => {
   const solvedGrid = generateSolvedGrid();
   const puzzle = JSON.parse(JSON.stringify(solvedGrid)); // Deep copy
   
@@ -83,19 +83,55 @@ export const generatePuzzle = (difficulty: 'easy' | 'medium' | 'hard'): number[]
   const cellsToRemove = {
     easy: 30,
     medium: 40,
-    hard: 50
+    hard: 50,
+    expert: 55
   };
   
   let count = 0;
   const totalToRemove = cellsToRemove[difficulty];
   
-  while (count < totalToRemove) {
-    const row = Math.floor(Math.random() * GRID_SIZE);
-    const col = Math.floor(Math.random() * GRID_SIZE);
+  // For expert level, we'll try to create a more challenging puzzle
+  // by ensuring we don't leave too many numbers in any single row/column/box
+  if (difficulty === 'expert') {
+    // First, remove numbers evenly across the grid
+    for (let box = 0; box < 9; box++) {
+      const boxRow = Math.floor(box / 3) * 3;
+      const boxCol = (box % 3) * 3;
+      
+      // Remove 6-7 numbers from each box
+      let boxCount = 0;
+      while (boxCount < 6) {
+        const row = boxRow + Math.floor(Math.random() * 3);
+        const col = boxCol + Math.floor(Math.random() * 3);
+        
+        if (puzzle[row][col] !== EMPTY_CELL) {
+          puzzle[row][col] = EMPTY_CELL;
+          boxCount++;
+          count++;
+        }
+      }
+    }
     
-    if (puzzle[row][col] !== EMPTY_CELL) {
-      puzzle[row][col] = EMPTY_CELL;
-      count++;
+    // Then remove remaining numbers randomly
+    while (count < totalToRemove) {
+      const row = Math.floor(Math.random() * GRID_SIZE);
+      const col = Math.floor(Math.random() * GRID_SIZE);
+      
+      if (puzzle[row][col] !== EMPTY_CELL) {
+        puzzle[row][col] = EMPTY_CELL;
+        count++;
+      }
+    }
+  } else {
+    // For other difficulties, use the original random removal method
+    while (count < totalToRemove) {
+      const row = Math.floor(Math.random() * GRID_SIZE);
+      const col = Math.floor(Math.random() * GRID_SIZE);
+      
+      if (puzzle[row][col] !== EMPTY_CELL) {
+        puzzle[row][col] = EMPTY_CELL;
+        count++;
+      }
     }
   }
   

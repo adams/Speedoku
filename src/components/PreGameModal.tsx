@@ -17,7 +17,7 @@ const PreGameModal: React.FC<PreGameModalProps> = ({ onStartGame }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newDifficulty = e.target.value as 'easy' | 'medium' | 'hard';
+    const newDifficulty = e.target.value as 'easy' | 'medium' | 'hard' | 'expert';
     setDifficulty(newDifficulty);
   };
 
@@ -123,6 +123,7 @@ const PreGameModal: React.FC<PreGameModalProps> = ({ onStartGame }) => {
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>
             <option value="hard">Hard</option>
+            <option value="expert">Expert</option>
           </select>
         </div>
         
