@@ -1,11 +1,9 @@
 import React from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 
-interface NumberSelectorProps {
-  showAutoSelectEffect?: boolean;
-}
+interface NumberSelectorProps {}
 
-const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = false }) => {
+const NumberSelector: React.FC<NumberSelectorProps> = () => {
   const { selectedNumber, setSelectedNumber, grid, findFirstAvailableCellForNumber, setSelectedCell, selectedCell, fillCell } = useSudoku();
   
   // Create an array of numbers 1-9
@@ -61,26 +59,6 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
           position: 'relative',
         }}
       >
-        {showAutoSelectEffect && selectedNumber && (
-          <div 
-            className="auto-select-highlight"
-            style={{
-              position: 'absolute',
-              top: `-5px`,
-              left: `${(((selectedNumber - 1) % 3) * (cellWidth + gap))}px`,
-              width: `${cellWidth}px`,
-              height: `${cellHeight}px`,
-              border: '2px solid #1890ff',
-              borderRadius: '4px',
-              animation: 'pulse 1s ease-in-out',
-              zIndex: 1,
-              boxShadow: '0 0 8px rgba(24, 144, 255, 0.5)',
-              pointerEvents: 'none',
-              opacity: 0.7,
-              transform: `translateY(${Math.floor((selectedNumber - 1) / 3) * (cellHeight + gap) + 5}px)`,
-            }}
-          />
-        )}
         {numbers.map((num) => {
           const isComplete = numberCounts[num] === 9;
           const hasAvailableSpot = findFirstAvailableCellForNumber(num) !== null;
@@ -134,7 +112,6 @@ const NumberSelector: React.FC<NumberSelectorProps> = ({ showAutoSelectEffect = 
                   ? 'white' 
                   : isComplete ? '#52c41a' : '#333',
                 position: 'relative',
-                animation: selectedNumber === num && showAutoSelectEffect ? 'pulse 1s ease-in-out' : 'none',
                 zIndex: 2,
                 fontSize: '26px',
               }}

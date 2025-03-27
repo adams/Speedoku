@@ -51,33 +51,6 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
     setShowPreGameModal
   }));
   
-  // State to track auto-selection animation
-  const [showAutoSelectEffect, setShowAutoSelectEffect] = useState(false);
-  
-  // Track previous selected number to detect auto-selection
-  const [prevSelectedNumber, setPrevSelectedNumber] = useState<number | null>(null);
-  
-  // Effect to detect when a number is automatically selected
-  useEffect(() => {
-    if (selectedNumber !== prevSelectedNumber) {
-      // If the number changed and we didn't manually clear it
-      if (selectedNumber !== null && prevSelectedNumber !== null) {
-        // This was likely an auto-selection
-        setShowAutoSelectEffect(true);
-        
-        // Clear the effect after a short delay
-        const timer = setTimeout(() => {
-          setShowAutoSelectEffect(false);
-        }, 1000);
-        
-        return () => clearTimeout(timer);
-      }
-      
-      // Update the previous number
-      setPrevSelectedNumber(selectedNumber);
-    }
-  }, [selectedNumber, prevSelectedNumber]);
-  
   // Jump to the first or next available cell for the selected number
   const jumpToAvailableCell = (cycleToNext: boolean = false, reverse: boolean = false) => {
     if (selectedNumber) {
@@ -421,7 +394,7 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
             onNewGameRequested={() => setShowPreGameModal(true)} 
           />
         </div>
-        <NumberSelector showAutoSelectEffect={showAutoSelectEffect} />
+        <NumberSelector />
       </div>
       
       <div className="game-sidebar">
@@ -448,21 +421,6 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
               <div><span className="keyboard-shortcut">N</span> New game</div>
             </div>
           </div>
-          {showAutoSelectEffect && (
-            <div 
-              style={{ 
-                color: 'var(--primary-color)', 
-                fontWeight: 'bold',
-                marginTop: '10px',
-                animation: 'fadeIn 0.3s ease-in-out',
-                padding: '5px 10px',
-                backgroundColor: 'rgba(41, 98, 255, 0.1)',
-                borderRadius: '4px'
-              }}
-            >
-              Number completed! Automatically selected next number.
-            </div>
-          )}
         </div>
       </div>
     </div>
