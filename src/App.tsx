@@ -1,20 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import './App.css'
-import { SudokuProvider, useSudoku } from './utils/SudokuContext'
+import { SudokuProvider } from './utils/SudokuContext'
 import SudokuBoard, { SudokuBoardHandle } from './components/SudokuBoard'
 
 const AppContent: React.FC = () => {
-  const { isComplete } = useSudoku();
-  
   // Reference to the SudokuBoard component
   const sudokuBoardRef = useRef<SudokuBoardHandle>(null);
-  
-  // Function to be called by Celebration to show the pre-game modal
-  const handleShowPreGameModal = () => {
-    if (sudokuBoardRef.current) {
-      sudokuBoardRef.current.setShowPreGameModal(true);
-    }
-  };
 
   return (
     <div className="app-container">

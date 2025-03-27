@@ -1,4 +1,4 @@
-import React, { useEffect, useState, forwardRef, useImperativeHandle, useRef } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 import SudokuCell from './SudokuCell';
 import NumberSelector from './NumberSelector';
@@ -31,15 +31,11 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
     pencilMode,
     cyclePencilMode,
     isUnsolvable,
-    setIsUnsolvable,
-    generateNewGame
+    setIsUnsolvable
   } = useSudoku();
   
   // State to track if pre-game modal should be shown
   const [showPreGameModal, setShowPreGameModal] = useState(true);
-  
-  // Add a ref to track if we're currently in a transition between game states
-  const inTransitionRef = useRef(false);
   
   // Expose the setShowPreGameModal function to the parent component via ref
   useImperativeHandle(ref, () => ({

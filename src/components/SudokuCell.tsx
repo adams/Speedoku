@@ -26,7 +26,6 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
     isSameHouseRowOrColumn,
     getPencilMarks,
     getValidCandidates,
-    isCellAvailableForNumber,
     setSelectedCell,
     setSelectedNumber,
     findFirstAvailableCellForNumber,
@@ -98,9 +97,6 @@ const SudokuCell: React.FC<SudokuCellProps> = ({
   const isValidForSelectedNumber = selectedNumber !== null && 
                                   value === EMPTY_CELL && 
                                   !isSameHouseRowOrColumn(row, col, selectedNumber);
-                                  
-  // Determine cursor style based on selectability
-  const cursorStyle = isValidForSelectedNumber ? 'pointer' : 'default';
   
   // Generate the pencil marks grid
   const renderPencilMarks = () => {

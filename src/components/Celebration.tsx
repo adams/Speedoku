@@ -8,7 +8,7 @@ interface CelebrationProps {
 }
 
 const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequested }) => {
-  const { isComplete, generateNewGame } = useSudoku();
+  const { isComplete } = useSudoku();
   const [showModal, setShowModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
