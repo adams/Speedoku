@@ -31,7 +31,8 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
     pencilMode,
     cyclePencilMode,
     isUnsolvable,
-    setIsUnsolvable
+    setIsUnsolvable,
+    isSameHouseRowOrColumn
   } = useSudoku();
   
   // State to track if pre-game modal should be shown
@@ -117,7 +118,97 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
     return () => clearTimeout(timer);
   }, [grid, checkSolution]);
   
-  // Handle keyboard input
+  // Function to find the next valid cell in a specific direction
+  const findNextCellInDirection = (direction: 'up' | 'down' | 'left' | 'right'): [number, number] | null => {
+    if (!selectedCell || !selectedNumber) return null;
+    
+    const [currentRow, currentCol] = selectedCell;
+    let nextRow = currentRow;
+    let nextCol = currentCol;
+    
+    // Check if a cell is valid for the selected number
+    const isCellValid = (r: number, c: number): boolean => {
+      // Must be in bounds
+      if (r < 0 || r >= 9 || c < 0 || c >= 9) return false;
+      
+      // Must be empty
+      if (grid[r][c] !== EMPTY_CELL) return false;
+      
+      // Must not violate Sudoku rules
+      if (isSameHouseRowOrColumn(r, c, selectedNumber)) return false;
+      
+      // Must not be an initial cell
+      if (initialGrid[r][c] !== EMPTY_CELL) return false;
+      
+      return true;
+    };
+    
+    // Find the next cell in the specified direction
+    const findNext = (): [number, number] | null => {
+      const increment = direction === 'up' || direction === 'left' ? -1 : 1;
+      
+      if (direction === 'up' || direction === 'down') {
+        // Start from the current position and move in the specified direction
+        for (let r = nextRow + increment; direction === 'down' ? r < 9 : r >= 0; r += increment) {
+          if (isCellValid(r, nextCol)) {
+            return [r, nextCol];
+          }
+        }
+        
+        // If we've reached the end of the column, wrap around and try the next column
+        if (direction === 'down') {
+          for (let c = nextCol + 1; c < 9; c++) {
+            for (let r = 0; r < 9; r++) {
+              if (isCellValid(r, c)) {
+                return [r, c];
+              }
+            }
+          }
+        } else { // Up direction
+          for (let c = nextCol - 1; c >= 0; c--) {
+            for (let r = 8; r >= 0; r--) {
+              if (isCellValid(r, c)) {
+                return [r, c];
+              }
+            }
+          }
+        }
+      } else { // Left or right
+        // Start from the current position and move in the specified direction
+        for (let c = nextCol + increment; direction === 'right' ? c < 9 : c >= 0; c += increment) {
+          if (isCellValid(nextRow, c)) {
+            return [nextRow, c];
+          }
+        }
+        
+        // If we've reached the end of the row, wrap around and try the next row
+        if (direction === 'right') {
+          for (let r = nextRow + 1; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+              if (isCellValid(r, c)) {
+                return [r, c];
+              }
+            }
+          }
+        } else { // Left direction
+          for (let r = nextRow - 1; r >= 0; r--) {
+            for (let c = 8; c >= 0; c--) {
+              if (isCellValid(r, c)) {
+                return [r, c];
+              }
+            }
+          }
+        }
+      }
+      
+      // If no valid cell is found, return null
+      return null;
+    };
+    
+    return findNext();
+  };
+  
+  // Handle key events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // 'N' key - show pre-game modal
@@ -129,6 +220,19 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
       // Toggle pencil mode with 'p' key
       if (e.key === 'p' || e.key === 'P') {
         cyclePencilMode();
+        return;
+      }
+      
+      // Arrow keys for navigation between valid cells
+      if (e.key.startsWith('Arrow') && selectedNumber) {
+        e.preventDefault();
+        
+        const direction = e.key.replace('Arrow', '').toLowerCase() as 'up' | 'down' | 'left' | 'right';
+        const nextCell = findNextCellInDirection(direction);
+        
+        if (nextCell) {
+          setSelectedCell(nextCell);
+        }
         return;
       }
       
@@ -227,7 +331,23 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedCell, selectedNumber, fillCell, clearCell, setSelectedCell, setSelectedNumber, findFirstAvailableCellForNumber, jumpToAvailableCell, pencilMode, togglePencilMark, cyclePencilMode]);
+  }, [
+    selectedCell, 
+    selectedNumber, 
+    fillCell, 
+    clearCell, 
+    setSelectedCell, 
+    setSelectedNumber, 
+    findFirstAvailableCellForNumber, 
+    jumpToAvailableCell, 
+    pencilMode, 
+    togglePencilMark, 
+    cyclePencilMode,
+    findNextCellInDirection,
+    grid,
+    initialGrid,
+    isSameHouseRowOrColumn
+  ]);
   
   // Helper function to manage transition from unsolvable to new game
   const handleUnsolvableModalDismiss = () => {
@@ -307,6 +427,7 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
             </div>
             
             <div className="shortcut-group">
+              <div><span className="keyboard-shortcut">↑↓←→</span> Navigate between valid cells</div>
               <div><span className="keyboard-shortcut">1</span>-<span className="keyboard-shortcut">9</span> Select number from grid</div>
               <div><span className="keyboard-shortcut">Enter</span> Enter selected number</div>
             </div>
