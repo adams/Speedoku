@@ -8,7 +8,7 @@ interface CelebrationProps {
 }
 
 const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequested }) => {
-  const { isComplete } = useSudoku();
+  const { isComplete, setIsComplete } = useSudoku();
   const [showModal, setShowModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -85,12 +85,23 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequeste
     }
   }, [isComplete]);
 
+  // Reset modal state when isComplete changes to false
+  useEffect(() => {
+    if (!isComplete) {
+      setShowModal(false);
+      setIsProcessing(false);
+    }
+  }, [isComplete]);
+
   // Handler function to prevent multiple dismissals
   const handleDismiss = () => {
     if (isProcessing) return; // Prevent multiple calls
     
     setIsProcessing(true);
     setShowModal(false);
+    
+    // Reset the isComplete state to avoid the modal getting stuck
+    setIsComplete(false);
     
     // Tell the parent component to show the pre-game modal
     if (onNewGameRequested) {
@@ -131,7 +142,7 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequeste
     <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
       {showModal && (
         <div className="board-modal-overlay" style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
@@ -140,9 +151,8 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequeste
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 100,
+          zIndex: 1000,
           backdropFilter: 'blur(2px)',
-          borderRadius: '4px',
           pointerEvents: 'auto'
         }}>
           <div className="modal-content" style={{

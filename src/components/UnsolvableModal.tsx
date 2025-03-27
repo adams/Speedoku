@@ -46,7 +46,7 @@ const UnsolvableModal: React.FC<UnsolvableModalProps> = ({ onNewGame }) => {
 
   return (
     <div className="board-modal-overlay" style={{
-      position: 'absolute',
+      position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
@@ -55,9 +55,8 @@ const UnsolvableModal: React.FC<UnsolvableModalProps> = ({ onNewGame }) => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 100,
-      backdropFilter: 'blur(2px)',
-      borderRadius: '4px'
+      zIndex: 1000,
+      backdropFilter: 'blur(2px)'
     }}>
       <div 
         className="modal-content" 
