@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 import confetti from 'canvas-confetti';
 
 interface CelebrationProps {
   onComplete?: () => void;
+  onNewGameRequested?: () => void;
 }
 
-const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
+const Celebration: React.FC<CelebrationProps> = ({ onComplete, onNewGameRequested }) => {
   const { isComplete, generateNewGame } = useSudoku();
   const [showModal, setShowModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (isComplete) {
@@ -20,7 +24,7 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
         return Math.random() * (max - min) + min;
       };
       
-      // Create a canvas that covers the entire screen
+      // Create a canvas that covers the entire window
       const myCanvas = document.createElement('canvas');
       myCanvas.style.position = 'fixed';
       myCanvas.style.top = '0';
@@ -41,12 +45,14 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
         const remaining = animationEnd - now;
         
         if (remaining <= 0) {
-          document.body.removeChild(myCanvas);
+          if (document.body.contains(myCanvas)) {
+            document.body.removeChild(myCanvas);
+          }
           setShowModal(true); // Show the modal after confetti animation
           return;
         }
         
-        // Launch confetti from multiple origins
+        // Launch confetti from multiple origins across the entire screen
         const confettiCount = 3;
         for (let i = 0; i < confettiCount; i++) {
           // Vary the origin points across the width of the screen
@@ -79,14 +85,50 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
     }
   }, [isComplete]);
 
-  const handleNewGame = () => {
+  // Handler function to prevent multiple dismissals
+  const handleDismiss = () => {
+    if (isProcessing) return; // Prevent multiple calls
+    
+    setIsProcessing(true);
     setShowModal(false);
-    generateNewGame();
+    
+    // Tell the parent component to show the pre-game modal
+    if (onNewGameRequested) {
+      onNewGameRequested();
+    }
+    
     if (onComplete) onComplete();
   };
+  
+  // Add keyboard event listener for Enter key
+  useEffect(() => {
+    // Only add the listener when the modal is shown
+    if (!showModal) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.stopPropagation(); // Stop event propagation to prevent other handlers
+        handleDismiss();
+      }
+    };
+    
+    // Add event listener with capture phase to ensure it gets priority
+    window.addEventListener('keydown', handleKeyDown, true);
+    
+    // Focus the button to ensure keyboard events work properly
+    if (buttonRef.current) {
+      buttonRef.current.focus();
+    }
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [showModal, isProcessing]);
 
   return (
-    <>
+    <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
       {showModal && (
         <div className="board-modal-overlay" style={{
           position: 'absolute',
@@ -100,7 +142,8 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
           alignItems: 'center',
           zIndex: 100,
           backdropFilter: 'blur(2px)',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          pointerEvents: 'auto'
         }}>
           <div className="modal-content" style={{
             backgroundColor: 'white',
@@ -110,7 +153,9 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
             width: '90%',
             textAlign: 'center',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)'
-          }}>
+          }}
+          tabIndex={-1} // Ensure the div can receive focus for keyboard events
+          >
             <div style={{ fontSize: '40px', marginBottom: '5px' }}>🎉</div>
             <h2 style={{ 
               color: '#52c41a',
@@ -127,7 +172,10 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
               Congratulations! You've successfully completed the puzzle.
             </p>
             <button 
-              onClick={handleNewGame}
+              ref={buttonRef}
+              onClick={handleDismiss}
+              disabled={isProcessing}
+              autoFocus // Add autofocus to ensure it receives keyboard events
               style={{
                 backgroundColor: '#52c41a',
                 color: 'white',
@@ -135,18 +183,19 @@ const Celebration: React.FC<CelebrationProps> = ({ onComplete }) => {
                 borderRadius: '4px',
                 padding: '8px 16px',
                 fontSize: '16px',
-                cursor: 'pointer',
+                cursor: isProcessing ? 'default' : 'pointer',
                 fontWeight: 'bold',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                opacity: isProcessing ? 0.7 : 1
               }}
             >
-              New Game
+              Dismiss (ENTR)
             </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

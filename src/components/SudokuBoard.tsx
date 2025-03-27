@@ -1,12 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { useSudoku } from '../utils/SudokuContext';
 import SudokuCell from './SudokuCell';
 import NumberSelector from './NumberSelector';
 import Timer from './Timer';
 import UnsolvableModal from './UnsolvableModal';
+import PreGameModal from './PreGameModal';
+import Celebration from './Celebration';
+import { PencilModeButton } from './GameControls';
 import { EMPTY_CELL } from '../utils/sudokuUtils';
 
-const SudokuBoard: React.FC = () => {
+export interface SudokuBoardHandle {
+  setShowPreGameModal: (show: boolean) => void;
+}
+
+const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
   const { 
     grid, 
     initialGrid, 
@@ -24,8 +31,20 @@ const SudokuBoard: React.FC = () => {
     pencilMode,
     cyclePencilMode,
     isUnsolvable,
+    setIsUnsolvable,
     generateNewGame
   } = useSudoku();
+  
+  // State to track if pre-game modal should be shown
+  const [showPreGameModal, setShowPreGameModal] = useState(true);
+  
+  // Add a ref to track if we're currently in a transition between game states
+  const inTransitionRef = useRef(false);
+  
+  // Expose the setShowPreGameModal function to the parent component via ref
+  useImperativeHandle(ref, () => ({
+    setShowPreGameModal
+  }));
   
   // State to track auto-selection animation
   const [showAutoSelectEffect, setShowAutoSelectEffect] = useState(false);
@@ -105,9 +124,9 @@ const SudokuBoard: React.FC = () => {
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 'N' key - start a new game
+      // 'N' key - show pre-game modal
       if (e.key === 'n' || e.key === 'N') {
-        generateNewGame();
+        setShowPreGameModal(true);
         return;
       }
       
@@ -214,6 +233,16 @@ const SudokuBoard: React.FC = () => {
     };
   }, [selectedCell, selectedNumber, fillCell, clearCell, setSelectedCell, setSelectedNumber, findFirstAvailableCellForNumber, jumpToAvailableCell, pencilMode, togglePencilMark, cyclePencilMode]);
   
+  // Helper function to manage transition from unsolvable to new game
+  const handleUnsolvableModalDismiss = () => {
+    // First, reset the unsolvable state
+    setIsUnsolvable(false);
+    
+    // Then immediately show the pre-game modal
+    // No delays, no requestAnimationFrame - direct sequence
+    setShowPreGameModal(true);
+  };
+  
   return (
     <div className="game-layout">
       <div className="game-main-content">
@@ -253,15 +282,27 @@ const SudokuBoard: React.FC = () => {
           </div>
           {isUnsolvable && (
             <UnsolvableModal 
-              onNewGame={generateNewGame} 
+              onNewGame={handleUnsolvableModalDismiss} 
             />
           )}
+          {!isUnsolvable && showPreGameModal && (
+            <PreGameModal 
+              onStartGame={() => {
+                setShowPreGameModal(false);
+              }} 
+            />
+          )}
+          <Celebration 
+            onComplete={() => {}} 
+            onNewGameRequested={() => setShowPreGameModal(true)} 
+          />
         </div>
         <NumberSelector showAutoSelectEffect={showAutoSelectEffect} />
       </div>
       
       <div className="game-sidebar">
         <Timer isGameOver={isUnsolvable} />
+        <PencilModeButton />
         <div className="keyboard-instructions">
           <div className="shortcuts-grid">
             <div className="shortcut-group">
@@ -272,8 +313,6 @@ const SudokuBoard: React.FC = () => {
             <div className="shortcut-group">
               <div><span className="keyboard-shortcut">1</span>-<span className="keyboard-shortcut">9</span> Select number from grid</div>
               <div><span className="keyboard-shortcut">Enter</span> Enter selected number</div>
-              <div>Press selected number key to enter value</div>
-              <div><span className="keyboard-shortcut">Backspace</span> Clear selected cell</div>
             </div>
             
             <div className="shortcut-group">
@@ -303,6 +342,6 @@ const SudokuBoard: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
 export default SudokuBoard; 

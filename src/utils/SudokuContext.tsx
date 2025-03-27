@@ -114,12 +114,15 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
   const [pencilMode, setPencilMode] = useState<'off' | 'auto'>('off');
 
   const generateNewGame = () => {
+    // First completely reset the unsolvable state to ensure clean start
+    setIsUnsolvable(false);
+    
+    // Generate new puzzle and reset all states
     const newPuzzle = generatePuzzle(difficulty);
     setGrid(JSON.parse(JSON.stringify(newPuzzle)));
     setInitialGrid(JSON.parse(JSON.stringify(newPuzzle)));
     setSelectedCell(null);
     setIsComplete(false);
-    setIsUnsolvable(false);
     setPencilMarks({});
     setStartTime(Date.now());
     
@@ -848,17 +851,30 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
     setPencilMode(current => current === 'off' ? 'auto' : 'off');
   };
 
-  // Start a new game when the component mounts
+  // Start a new game when the component mounts but don't start timer
   useEffect(() => {
-    generateNewGame();
+    const newPuzzle = generatePuzzle(difficulty);
+    setGrid(JSON.parse(JSON.stringify(newPuzzle)));
+    setInitialGrid(JSON.parse(JSON.stringify(newPuzzle)));
+    setSelectedCell(null);
+    setIsComplete(false);
+    setIsUnsolvable(false);
+    setPencilMarks({});
+    
+    // After setting up the new game, find and select the first incomplete number
+    setTimeout(() => {
+      const nextNumber = findNextIncompleteNumberInGrid(newPuzzle);
+      if (nextNumber) {
+        setSelectedNumber(nextNumber);
+        
+        // Find the first available cell for this number and select it
+        const firstAvailableCell = findFirstAvailableCellForNumberInGrid(nextNumber, newPuzzle);
+        if (firstAvailableCell) {
+          setSelectedCell(firstAvailableCell);
+        }
+      }
+    }, 0);
   }, []);
-  
-  // Start the timer if it hasn't been started yet (for initial game load)
-  useEffect(() => {
-    if (grid && grid[0].some(cell => cell !== EMPTY_CELL) && !startTime) {
-      setStartTime(Date.now());
-    }
-  }, [grid, startTime]);
 
   // Add isCellAvailableForNumber function
   const isCellAvailableForNumber = (row: number, col: number, num: number): boolean => {
