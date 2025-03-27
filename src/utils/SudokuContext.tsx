@@ -34,6 +34,7 @@ export interface SudokuContextType {
   getValidCandidates: (row: number, col: number) => number[];
   checkIsSolvable: () => boolean;
   startTime: number | null;
+  setStartTime: (time: number | null) => void;
   pencilMode: 'off' | 'auto';
   cyclePencilMode: () => void;
 }
@@ -917,6 +918,7 @@ export const SudokuProvider: React.FC<SudokuProviderProps> = ({ children }) => {
         getValidCandidates,
         checkIsSolvable,
         startTime,
+        setStartTime,
         pencilMode,
         cyclePencilMode,
       }}

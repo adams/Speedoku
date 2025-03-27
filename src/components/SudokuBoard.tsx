@@ -32,11 +32,19 @@ const SudokuBoard = forwardRef<SudokuBoardHandle, {}>((_props, ref) => {
     cyclePencilMode,
     isUnsolvable,
     setIsUnsolvable,
-    isSameHouseRowOrColumn
+    isSameHouseRowOrColumn,
+    setStartTime
   } = useSudoku();
   
   // State to track if pre-game modal should be shown
   const [showPreGameModal, setShowPreGameModal] = useState(true);
+  
+  // Reset timer when pre-game modal is shown
+  useEffect(() => {
+    if (showPreGameModal) {
+      setStartTime(null);
+    }
+  }, [showPreGameModal, setStartTime]);
   
   // Expose the setShowPreGameModal function to the parent component via ref
   useImperativeHandle(ref, () => ({
