@@ -12,11 +12,12 @@
   /* ink + accents */
   --color-ink: #171a2b;
   --color-muted: #8a90ae;
-  --color-cand: #a3a8c2;
+  --color-cand: #6b7193;        /* candidate pencil marks (darker = readable) */
   --color-accent: #ff3d77;      /* hot coral-pink primary */
   --color-accent-2: #ee2566;
   --color-cyan: #22d3ee;        /* electric secondary */
-  --color-accent-soft: #ffe3ec; /* legal-target fill */
+  --color-accent-soft: #ffe3ec; /* (reserved for warn/non-option signals) */
+  --color-cyan-soft: #d4f3fb;   /* legal-target fill — blue = an option */
   --color-entered: #0cb7d4;     /* player-entered numerals */
   --color-mint: #06ce96;        /* completed digit */
   --color-mint-soft: #dffbef;
@@ -27,7 +28,7 @@
 
 :root {
   --glow-accent: 0 10px 28px rgba(255, 61, 119, 0.4);
-  --cursor-glow: 0 6px 18px rgba(255, 61, 119, 0.28);
+  --cursor-glow: 0 6px 18px rgba(34, 211, 238, 0.32);
 }
 
 body {
