@@ -28,7 +28,7 @@ describe("makeDefaultConfig", () => {
     expect(c.floorRating).toBe(10);
     expect(c.topRating).toBe(90);
     expect(c.tutorialRating).toBe(c.floorRating); // legacy = depth-1 rating
-    expect(c.slope).toBeCloseTo((90 - 10) / 22, 6);
+    expect(c.slope).toBeCloseTo((90 - 10) / 14, 6);
     expect(c.seed).toBe(42);
     expect(c.mode).toBe("hints-on");
   });

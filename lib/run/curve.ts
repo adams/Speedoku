@@ -3,7 +3,7 @@ import type { RunConfig } from "./types";
 
 // Empties saturate (reach minimal) faster than technique, so you get off the
 // near-solved level quickly while technique keeps climbing afterward. Tuning knob.
-const EMPTIES_REACH = 8;
+const EMPTIES_REACH = 7; // saturates by ~depth 7
 const DEFAULT_FLOOR_EMPTIES = 8;
 const DEFAULT_TOP_EMPTIES = 54;
 
