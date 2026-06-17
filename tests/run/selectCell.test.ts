@@ -36,9 +36,11 @@ function playing(
     activeDigit,
     activeCell,
     puzzleStartMs: 0,
+    lastPlaceMs: 0,
     score: 0,
     fastestSolveMs: null,
     totalMs: 0,
+    emptyAtStart: grid.filter((d) => d === 0).length,
   };
 }
 

@@ -3,7 +3,7 @@ import { cellsForDigit, isSafe, isSolvable } from "@/lib/engine";
 import type { BankFile } from "@/lib/engine/banks";
 import { pickPuzzle } from "@/lib/engine/banks";
 import { targetRating } from "./curve";
-import { puzzleCredit, puzzleScore } from "./scorer";
+import { cellPoints } from "./scorer";
 import type {
   Axis,
   Ctx,
@@ -94,11 +94,11 @@ function lowestSelection(grid: Grid): {
 
 function advance(state: RunState, ctx: Ctx): RunState {
   const config: RunConfig = ctx.config;
-  let { score, fastestSolveMs, totalMs } = state;
+  let { fastestSolveMs, totalMs } = state;
 
+  // Points were already banked per placement; advance only rolls puzzle timing.
   if (state.status === "playing" && state.puzzleStartMs != null) {
     const solveMs = ctx.nowMs - state.puzzleStartMs;
-    score += puzzleScore(state.rating, solveMs, config);
     fastestSolveMs =
       fastestSolveMs == null ? solveMs : Math.min(fastestSolveMs, solveMs);
     totalMs += solveMs;
@@ -115,7 +115,7 @@ function advance(state: RunState, ctx: Ctx): RunState {
     rating,
     ...lowestSelection(grid),
     puzzleStartMs: ctx.nowMs,
-    score,
+    lastPlaceMs: ctx.nowMs,
     fastestSolveMs,
     totalMs,
     emptyAtStart: emptyCells(grid).length,
@@ -139,6 +139,7 @@ export function initRun(config: RunConfig, bank: BankFile, rng: Rng): RunState {
     rating,
     ...lowestSelection(grid),
     puzzleStartMs: null,
+    lastPlaceMs: null,
     score: 0,
     fastestSolveMs: null,
     totalMs: 0,
@@ -153,7 +154,7 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
     case "startRun": {
       // Idempotent: start depth 1's clock the moment play begins, once.
       if (state.puzzleStartMs != null) return state;
-      return { ...state, puzzleStartMs: ctx.nowMs };
+      return { ...state, puzzleStartMs: ctx.nowMs, lastPlaceMs: ctx.nowMs };
     }
     case "selectNumber": {
       const cells = cellsForDigit(state.grid, intent.digit);
@@ -195,44 +196,58 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
 
       const grid = place(state.grid, intent.cell, d);
 
+      // Bank points for this placement immediately, scaled by how fast it came.
+      // The score only ever goes up; speed shows up as bigger per-cell awards.
+      let score = state.score;
+      let lastPlaceMs = state.lastPlaceMs;
+      if (state.status === "playing" && state.puzzleStartMs != null) {
+        const from = state.lastPlaceMs ?? state.puzzleStartMs;
+        score += cellPoints(
+          state.rating,
+          ctx.nowMs - from,
+          state.emptyAtStart,
+          ctx.config,
+        );
+        lastPlaceMs = ctx.nowMs;
+      }
+
       if (state.status === "playing" && !isSolvable(grid)) {
         const solveMs =
           state.puzzleStartMs == null ? 0 : ctx.nowMs - state.puzzleStartMs;
-        const emptyNow = emptyCells(grid).length;
-        const progress =
-          state.emptyAtStart > 0
-            ? (state.emptyAtStart - emptyNow) / state.emptyAtStart
-            : 0;
-        const credit = puzzleCredit(
-          state.rating,
-          solveMs,
-          progress,
-          ctx.config,
-        );
         return {
           ...state,
           grid,
           status: "runOver",
-          score: state.score + credit,
+          score,
+          lastPlaceMs,
           totalMs: state.totalMs + solveMs,
         };
       }
       if (isComplete(grid)) {
-        return advance(state, ctx);
+        return advance({ ...state, score, lastPlaceMs }, ctx);
       }
 
       const stillValid = nextValidCellForDigit(grid, d, intent.cell);
       if (stillValid != null) {
-        return { ...state, grid, activeCell: stillValid };
+        return { ...state, grid, score, lastPlaceMs, activeCell: stillValid };
       }
       const nd = nextIncompleteDigit(grid, d);
       if (nd == null) {
-        return { ...state, grid, activeDigit: null, activeCell: null };
+        return {
+          ...state,
+          grid,
+          score,
+          lastPlaceMs,
+          activeDigit: null,
+          activeCell: null,
+        };
       }
       const ncells = cellsForDigit(grid, nd);
       return {
         ...state,
         grid,
+        score,
+        lastPlaceMs,
         activeDigit: nd,
         activeCell: ncells.length ? ncells[0] : null,
       };

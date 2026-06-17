@@ -41,6 +41,29 @@ export function puzzleScore(
   );
 }
 
+// Points for placing a single cell, banked immediately and never taken back.
+// It's the puzzle's per-cell share (base / emptyAtStart, difficulty-weighted)
+// scaled by how fast THIS placement landed — fast cells pay more, slow cells
+// floor out, but every placement adds something. Summed over a full puzzle at
+// par pace this ≈ the old per-puzzle award, so totals stay on the same scale.
+export function cellPoints(
+  rating: number,
+  dtMs: number,
+  emptyAtStart: number,
+  config: RunConfig,
+): number {
+  if (emptyAtStart <= 0) return 0;
+  const parCellSec = par(rating, config) / emptyAtStart;
+  const dtSec = Math.max(dtMs / 1000, 0.001);
+  const speed = Math.max(
+    config.floorRatio,
+    Math.min(config.cap, parCellSec / dtSec),
+  );
+  return Math.round(
+    (config.base / emptyAtStart) * difficultyWeight(rating, config) * speed,
+  );
+}
+
 // Points the *current* puzzle would bank if the run ended right now: the full
 // puzzle value scaled by how much of it you've filled. This is the value death
 // credits and that a completed puzzle banks (progress = 1).
