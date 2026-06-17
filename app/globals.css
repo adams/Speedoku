@@ -94,4 +94,4 @@ body {
   60% { transform: scale(1); }
   74%,100% { opacity: 0; }
 }
-@keyframes sdk-bgdip { 0%,28%,100% { background: transparent; } 52% { background: rgba(22,192,216,.10); } }
+@keyframes sdk-bgdip { 0%,28%,100% { background: transparent; } 52% { background: color-mix(in srgb, var(--color-cyan) 10%, transparent); } }

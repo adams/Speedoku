@@ -35,7 +35,6 @@ export function useInputController(
       }
     };
     return { onDigit, onSelectCell, onSubmit };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store]);
 
   useEffect(() => {
