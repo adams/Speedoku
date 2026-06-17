@@ -13,7 +13,8 @@
       "!.next",
       "!node_modules",
       "!public",
-      "!app/globals.css"
+      "!app/globals.css",
+      "!test-results"
     ]
   },
   "formatter": {
