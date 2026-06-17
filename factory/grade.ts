@@ -1,5 +1,6 @@
 import { analyze } from "sudoku-core";
 import type { Grid } from "@/lib/engine/types";
+import { dependencyEase } from "./dependency";
 
 /**
  * gradeDifficulty — continuous numeric difficulty rating for a puzzle.
@@ -17,4 +18,21 @@ export function gradeDifficulty(puzzle: Grid): number {
   const board = puzzle.map((d) => (d === 0 ? null : d));
   const result = analyze(board);
   return result.score ?? 0;
+}
+
+function normalize(xs: number[]): number[] {
+  const lo = Math.min(...xs);
+  const hi = Math.max(...xs);
+  const span = hi - lo;
+  if (span === 0) return xs.map(() => 0);
+  return xs.map((x) => (x - lo) / span);
+}
+
+export function combinedRatings(puzzles: Grid[], blendWeight = 0.25): number[] {
+  const scores = normalize(puzzles.map((p) => gradeDifficulty(p)));
+  const eases = normalize(puzzles.map((p) => dependencyEase(p)));
+  return puzzles.map(
+    (_, i) =>
+      1000 * ((1 - blendWeight) * scores[i] + blendWeight * (1 - eases[i])),
+  );
 }
