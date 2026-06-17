@@ -50,6 +50,7 @@ export interface Ctx {
 export type Intent =
   | { type: "selectNumber"; digit: number }
   | { type: "skipToNextCell"; traversal: Traversal }
+  | { type: "selectCell"; cell: number }
   | { type: "placeNumber"; cell: number };
 
 export interface RunSummary {

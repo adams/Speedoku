@@ -119,6 +119,13 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
             : nextValidCellForDigit(state.grid, state.activeDigit, from);
       return { ...state, activeCell: next };
     }
+    case "selectCell": {
+      const d = state.activeDigit;
+      if (d == null) return state;
+      if (state.grid[intent.cell] !== 0) return state;
+      if (!isSafe(state.grid, intent.cell, d)) return state;
+      return { ...state, activeCell: intent.cell };
+    }
     case "placeNumber": {
       const d = state.activeDigit;
       if (d == null) return state;
