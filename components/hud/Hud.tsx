@@ -1,11 +1,19 @@
 "use client";
 
+import type { Bests } from "@/lib/data/types";
+import { EMPTY_BESTS } from "@/lib/data/types";
 import { useElapsed } from "@/lib/run/useElapsed";
 import type { RunStoreApi } from "@/lib/run/useRunStore";
 import { useRunSelector } from "@/lib/run/useRunStore";
 import { mmss } from "@/lib/ui/format";
 
-export function Hud({ store }: { store: RunStoreApi }) {
+export function Hud({
+  store,
+  bests = EMPTY_BESTS,
+}: {
+  store: RunStoreApi;
+  bests?: Bests;
+}) {
   const depth = useRunSelector(store, (s) => s.state.depth);
   const score = useRunSelector(store, (s) => s.state.score);
   const status = useRunSelector(store, (s) => s.state.status);
@@ -31,6 +39,15 @@ export function Hud({ store }: { store: RunStoreApi }) {
 
       {/* Score */}
       <StatBlock label="Score" value={score.toLocaleString()} align="right" />
+
+      {/* Best — the live "beat this" pace target */}
+      {bests.bestScore > 0 && (
+        <StatBlock
+          label="Best"
+          value={bests.bestScore.toLocaleString()}
+          align="right"
+        />
+      )}
 
       {/* Hints badge — only in hints-on mode */}
       {mode === "hints-on" && (
