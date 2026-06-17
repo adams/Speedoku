@@ -1,23 +1,35 @@
 "use client";
 
+import type { Bests, NewBest } from "@/lib/data/types";
+import { EMPTY_BESTS } from "@/lib/data/types";
 import type { RunSummary } from "@/lib/run/types";
 import { mmss } from "@/lib/ui/format";
 
 export function RunOver({
   summary,
   onPlayAgain,
+  bests = EMPTY_BESTS,
+  isNewBest = { score: false, depth: false, fastest: false },
 }: {
   summary: RunSummary;
   onPlayAgain: () => void;
+  bests?: Bests;
+  isNewBest?: NewBest;
 }) {
-  const rows: [string, string][] = [
-    ["Depth", String(summary.depth)],
-    ["Score", summary.score.toLocaleString()],
-    [
-      "Fastest solve",
-      summary.fastestSolveMs == null ? "—" : mmss(summary.fastestSolveMs),
-    ],
-    ["Total time", mmss(summary.totalMs)],
+  const rows: { label: string; value: string; isNew: boolean }[] = [
+    { label: "Depth", value: String(summary.depth), isNew: isNewBest.depth },
+    {
+      label: "Score",
+      value: summary.score.toLocaleString(),
+      isNew: isNewBest.score,
+    },
+    {
+      label: "Fastest solve",
+      value:
+        summary.fastestSolveMs == null ? "—" : mmss(summary.fastestSolveMs),
+      isNew: isNewBest.fastest,
+    },
+    { label: "Total time", value: mmss(summary.totalMs), isNew: false },
   ];
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-[--color-board]/85 backdrop-blur-md">
@@ -48,17 +60,31 @@ export function RunOver({
 
           {/* Stats */}
           <dl className="flex flex-col divide-y divide-[--color-line]">
-            {rows.map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between py-2.5">
+            {rows.map((row) => (
+              <div
+                key={row.label}
+                className="flex items-center justify-between py-2.5"
+              >
                 <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-[--color-muted]">
-                  {k}
+                  {row.label}
                 </dt>
-                <dd className="text-xl font-extrabold tabular-nums text-[--color-ink]">
-                  {v}
+                <dd className="flex items-center gap-2 text-xl font-extrabold tabular-nums text-[--color-ink]">
+                  {row.isNew && (
+                    <span className="rounded-full bg-[--color-mint] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      New best!
+                    </span>
+                  )}
+                  {row.value}
                 </dd>
               </div>
             ))}
           </dl>
+
+          {bests.bestScore > 0 && !isNewBest.score && (
+            <p className="mt-4 text-center text-[12px] font-semibold text-[--color-muted]">
+              Best {bests.bestScore.toLocaleString()}
+            </p>
+          )}
 
           {/* CTA */}
           <button
