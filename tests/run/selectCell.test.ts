@@ -41,6 +41,7 @@ function playing(
     fastestSolveMs: null,
     totalMs: 0,
     emptyAtStart: grid.filter((d) => d === 0).length,
+    levels: [{ depth: 2, depthPts: 0, speedPts: 0 }],
   };
 }
 

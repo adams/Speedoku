@@ -3,12 +3,13 @@ import { cellsForDigit, isSafe, isSolvable } from "@/lib/engine";
 import type { BankFile } from "@/lib/engine/banks";
 import { pickPuzzle } from "@/lib/engine/banks";
 import { curveTarget } from "./curve";
-import { cellPoints } from "./scorer";
+import { cellDepthPoints, cellPoints } from "./scorer";
 import type {
   Axis,
   Ctx,
   Dir,
   Intent,
+  LevelLine,
   RunConfig,
   RunState,
   RunSummary,
@@ -107,6 +108,10 @@ function advance(state: RunState, ctx: Ctx): RunState {
   const depth = state.depth + 1;
   const target = curveTarget(depth, config);
   const grid = pickPuzzle(ctx.bank, target, ctx.rng);
+  const levels: LevelLine[] = [
+    ...state.levels,
+    { depth, depthPts: 0, speedPts: 0 },
+  ];
   return {
     ...state,
     status: "playing",
@@ -119,6 +124,7 @@ function advance(state: RunState, ctx: Ctx): RunState {
     fastestSolveMs,
     totalMs,
     emptyAtStart: emptyCells(grid).length,
+    levels,
   };
 }
 
@@ -144,6 +150,7 @@ export function initRun(config: RunConfig, bank: BankFile, rng: Rng): RunState {
     fastestSolveMs: null,
     totalMs: 0,
     emptyAtStart: emptyCells(grid).length,
+    levels: [{ depth, depthPts: 0, speedPts: 0 }],
   };
 }
 
@@ -200,15 +207,31 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
       // The score only ever goes up; speed shows up as bigger per-cell awards.
       let score = state.score;
       let lastPlaceMs = state.lastPlaceMs;
+      let levels = state.levels;
       if (state.status === "playing" && state.puzzleStartMs != null) {
         const from = state.lastPlaceMs ?? state.puzzleStartMs;
-        score += cellPoints(
+        const total = cellPoints(
           state.rating,
           ctx.nowMs - from,
           state.emptyAtStart,
           ctx.config,
         );
+        const depthPts = cellDepthPoints(
+          state.rating,
+          state.emptyAtStart,
+          ctx.config,
+        );
+        const speedPts = total - depthPts;
+        score += total;
         lastPlaceMs = ctx.nowMs;
+        // Accumulate into the current (last) level entry
+        const last = levels[levels.length - 1];
+        const updatedLast: LevelLine = {
+          depth: last.depth,
+          depthPts: last.depthPts + depthPts,
+          speedPts: last.speedPts + speedPts,
+        };
+        levels = [...levels.slice(0, -1), updatedLast];
       }
 
       if (state.status === "playing" && !isSolvable(grid)) {
@@ -220,16 +243,24 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
           status: "runOver",
           score,
           lastPlaceMs,
+          levels,
           totalMs: state.totalMs + solveMs,
         };
       }
       if (isComplete(grid)) {
-        return advance({ ...state, score, lastPlaceMs }, ctx);
+        return advance({ ...state, score, lastPlaceMs, levels }, ctx);
       }
 
       const stillValid = nextValidCellForDigit(grid, d, intent.cell);
       if (stillValid != null) {
-        return { ...state, grid, score, lastPlaceMs, activeCell: stillValid };
+        return {
+          ...state,
+          grid,
+          score,
+          lastPlaceMs,
+          levels,
+          activeCell: stillValid,
+        };
       }
       const nd = nextIncompleteDigit(grid, d);
       if (nd == null) {
@@ -238,6 +269,7 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
           grid,
           score,
           lastPlaceMs,
+          levels,
           activeDigit: null,
           activeCell: null,
         };
@@ -248,6 +280,7 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
         grid,
         score,
         lastPlaceMs,
+        levels,
         activeDigit: nd,
         activeCell: ncells.length ? ncells[0] : null,
       };
@@ -263,5 +296,6 @@ export function summarize(state: RunState): RunSummary {
     totalMs: state.totalMs,
     mode: state.mode,
     seed: state.seed,
+    levels: state.levels,
   };
 }

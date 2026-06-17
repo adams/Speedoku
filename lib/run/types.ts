@@ -30,6 +30,14 @@ export interface RunConfig {
   parSlowSec: number; // par at topRating
 }
 
+// Per-depth breakdown: depth share (par-pace value) + speed share (bonus/penalty).
+// Summed over all levels, depthPts + speedPts === run score.
+export interface LevelLine {
+  depth: number;
+  depthPts: number;
+  speedPts: number;
+}
+
 export interface RunState {
   status: RunStatus;
   mode: Mode;
@@ -45,6 +53,7 @@ export interface RunState {
   fastestSolveMs: number | null;
   totalMs: number;
   emptyAtStart: number; // empties when the current puzzle began
+  levels: LevelLine[]; // per-depth score breakdown; always length >= 1 while playing
 }
 
 // Run-stable deps + the per-dispatch clock. Create `rng` ONCE per run and
@@ -77,4 +86,5 @@ export interface RunSummary {
   totalMs: number;
   mode: Mode;
   seed: number;
+  levels?: LevelLine[]; // optional so existing RunSummary literals in tests compile unchanged
 }
