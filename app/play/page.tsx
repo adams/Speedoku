@@ -1,16 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Board } from "@/components/board/Board";
 import { PreGame } from "@/components/chrome/PreGame";
 import { RunOver } from "@/components/chrome/RunOver";
 import { Hud } from "@/components/hud/Hud";
 import { NumberPad } from "@/components/number-pad/NumberPad";
+import { createLocalAdapter } from "@/lib/data/localAdapter";
+import type { NewBest } from "@/lib/data/types";
 import type { BankFile } from "@/lib/engine/banks";
 import bank from "@/lib/engine/banks/banks.fixture.json";
 import { useInputController } from "@/lib/input/useInputController";
 import { summarize } from "@/lib/run/reduce";
 import { createRunStore } from "@/lib/run/store";
+import { usePersistence } from "@/lib/run/usePersistence";
 import { useRunSelector } from "@/lib/run/useRunStore";
 
 export default function PlayPage() {
@@ -26,6 +29,26 @@ export default function PlayPage() {
   const activeCell = useRunSelector(store, (s) => s.state.activeCell);
   const status = useRunSelector(store, (s) => s.state.status);
   const { onDigit, onSelectCell } = useInputController(store);
+
+  const adapter = useMemo(() => createLocalAdapter(), []);
+  const { bests, recordRun } = usePersistence(adapter, "hints-on");
+  const [isNewBest, setIsNewBest] = useState<NewBest | null>(null);
+  const recordedFor = useRef<typeof store | null>(null);
+
+  // Reset the record-once guard + new-best flags when a fresh run starts.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: store is the intentional trigger (new seed → new store → reset guard)
+  useEffect(() => {
+    recordedFor.current = null;
+    setIsNewBest(null);
+  }, [store]);
+
+  // Record the run exactly once when it ends.
+  useEffect(() => {
+    if (status === "runOver" && recordedFor.current !== store) {
+      recordedFor.current = store;
+      recordRun(summarize(store.getState().state)).then(setIsNewBest);
+    }
+  }, [status, store, recordRun]);
 
   const playAgain = () => {
     setSeed(Math.floor(Math.random() * 1e9));
@@ -60,7 +83,7 @@ export default function PlayPage() {
         {/* ── Board column ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-3 px-3 pb-3 pt-1 lg:px-0 lg:pt-0 lg:flex-1 lg:min-w-0">
           {/* Single HUD — visible on both breakpoints; sidebar picks it up via order */}
-          <Hud store={store} />
+          <Hud store={store} bests={bests} />
 
           <Board
             grid={grid}
@@ -137,6 +160,8 @@ export default function PlayPage() {
           <RunOver
             summary={summarize(store.getState().state)}
             onPlayAgain={playAgain}
+            bests={bests}
+            isNewBest={isNewBest ?? undefined}
           />
         )}
       </main>

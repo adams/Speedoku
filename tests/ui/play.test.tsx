@@ -27,4 +27,14 @@ describe("/play", () => {
     // a 2 now appears among the board cells (at least one placed) — depth still tutorial(1)
     expect(screen.getByText(/depth/i)).toBeInTheDocument();
   });
+
+  it("still starts and accepts a placement with persistence wired", async () => {
+    render(<PlayPage />);
+    await userEvent.click(screen.getByRole("button", { name: /start run/i }));
+    // board + pad present (persistence wiring didn't break the loop)
+    expect(screen.getAllByRole("button").length).toBeGreaterThan(81);
+    await userEvent.click(screen.getByRole("button", { name: /digit 2/i }));
+    await userEvent.click(screen.getByRole("button", { name: /digit 2/i }));
+    expect(screen.getByText(/depth/i)).toBeInTheDocument();
+  });
 });
