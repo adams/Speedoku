@@ -2,7 +2,7 @@ import type { Grid, Rng } from "@/lib/engine";
 import { cellsForDigit, isSafe, isSolvable } from "@/lib/engine";
 import type { BankFile } from "@/lib/engine/banks";
 import { pickPuzzle } from "@/lib/engine/banks";
-import { targetRating } from "./curve";
+import { curveTarget } from "./curve";
 import { cellPoints } from "./scorer";
 import type {
   Axis,
@@ -105,14 +105,14 @@ function advance(state: RunState, ctx: Ctx): RunState {
   }
 
   const depth = state.depth + 1;
-  const rating = targetRating(depth, config);
-  const grid = pickPuzzle(ctx.bank, rating, ctx.rng);
+  const target = curveTarget(depth, config);
+  const grid = pickPuzzle(ctx.bank, target, ctx.rng);
   return {
     ...state,
     status: "playing",
     depth,
     grid,
-    rating,
+    rating: target.rating,
     ...lowestSelection(grid),
     puzzleStartMs: ctx.nowMs,
     lastPlaceMs: ctx.nowMs,
@@ -128,15 +128,15 @@ function advance(state: RunState, ctx: Ctx): RunState {
 // when the board actually appears; later puzzles are stamped by `advance`.
 export function initRun(config: RunConfig, bank: BankFile, rng: Rng): RunState {
   const depth = 1;
-  const rating = targetRating(depth, config);
-  const grid = pickPuzzle(bank, rating, rng);
+  const target = curveTarget(depth, config);
+  const grid = pickPuzzle(bank, target, rng);
   return {
     status: "playing",
     mode: config.mode,
     seed: config.seed,
     depth,
     grid,
-    rating,
+    rating: target.rating,
     ...lowestSelection(grid),
     puzzleStartMs: null,
     lastPlaceMs: null,
