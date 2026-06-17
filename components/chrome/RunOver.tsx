@@ -93,6 +93,141 @@ export function RunOver({
             </p>
           )}
 
+          {/* Per-level depth/speed ledger */}
+          {(() => {
+            const levels = summary.levels ?? [];
+            if (levels.length === 0) return null;
+            const totalDepth = levels.reduce((a, l) => a + l.depthPts, 0);
+            const totalSpeed = levels.reduce((a, l) => a + l.speedPts, 0);
+            const total = totalDepth + totalSpeed || 1;
+            const depthPct = Math.round((totalDepth / total) * 100);
+            const speedPct = 100 - depthPct;
+            let running = 0;
+            const lastIdx = levels.length - 1;
+            return (
+              <div className="mt-6">
+                {/* Headline split */}
+                <div className="mb-3">
+                  <div className="flex items-baseline justify-between mb-1.5">
+                    <span
+                      className="text-[13px] font-extrabold tracking-tight"
+                      style={{ color: "var(--color-accent)" }}
+                    >
+                      {depthPct}% depth
+                    </span>
+                    <span
+                      className="text-[13px] font-extrabold tracking-tight"
+                      style={{ color: "var(--color-cyan)" }}
+                    >
+                      {speedPct}% speed
+                    </span>
+                  </div>
+                  {/* Proportional split bar */}
+                  <div
+                    className="h-[3px] w-full overflow-hidden rounded-full"
+                    style={{ background: "var(--color-line)" }}
+                  >
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.max(0, depthPct)}%`,
+                        background:
+                          "linear-gradient(90deg,var(--color-accent) 0%,var(--color-cyan) 200%)",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Per-level table */}
+                <div
+                  className="max-h-[168px] overflow-auto rounded-[6px]"
+                  style={{ border: "1px solid var(--color-line)" }}
+                >
+                  <table className="w-full text-[11px] tabular-nums">
+                    <thead>
+                      <tr
+                        style={{ borderBottom: "1px solid var(--color-line)" }}
+                      >
+                        <th
+                          className="px-2.5 py-1.5 text-left text-[9px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--color-muted)" }}
+                        >
+                          Lvl
+                        </th>
+                        <th
+                          className="px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--color-accent)" }}
+                        >
+                          +Depth
+                        </th>
+                        <th
+                          className="px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--color-cyan)" }}
+                        >
+                          +Speed
+                        </th>
+                        <th
+                          className="px-2.5 py-1.5 text-right text-[9px] font-bold uppercase tracking-widest"
+                          style={{ color: "var(--color-muted)" }}
+                        >
+                          Running
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {levels.map((l, idx) => {
+                        running += l.depthPts + l.speedPts;
+                        const isFinal = idx === lastIdx;
+                        return (
+                          <tr
+                            key={l.depth}
+                            style={{
+                              borderTop: "1px solid var(--color-line)",
+                              background: isFinal
+                                ? "color-mix(in srgb, var(--color-accent) 6%, transparent)"
+                                : undefined,
+                            }}
+                          >
+                            <td
+                              className="px-2.5 py-2 text-left text-[10px] font-bold uppercase tracking-wide"
+                              style={{ color: "var(--color-muted)" }}
+                            >
+                              {l.depth}
+                            </td>
+                            <td
+                              className="px-2.5 py-2 text-right font-bold"
+                              style={{ color: "var(--color-accent)" }}
+                            >
+                              {l.depthPts.toLocaleString()}
+                            </td>
+                            <td
+                              className="px-2.5 py-2 text-right font-bold"
+                              style={{ color: "var(--color-cyan)" }}
+                            >
+                              {l.speedPts.toLocaleString()}
+                            </td>
+                            <td
+                              className="px-2.5 py-2 text-right"
+                              style={{
+                                color: isFinal
+                                  ? "var(--color-ink)"
+                                  : "var(--color-muted)",
+                                fontWeight: isFinal ? 800 : 600,
+                                fontSize: isFinal ? "12px" : undefined,
+                              }}
+                            >
+                              {running.toLocaleString()}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* CTA */}
           <button
             type="button"

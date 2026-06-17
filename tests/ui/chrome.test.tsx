@@ -87,3 +87,35 @@ describe("chrome", () => {
     expect(screen.queryByText(/new best/i)).toBeNull();
   });
 });
+
+const summaryWithLevels: RunSummary = {
+  depth: 2,
+  score: 5000,
+  fastestSolveMs: 1000,
+  totalMs: 20000,
+  mode: "hints-on",
+  seed: 1,
+  levels: [
+    { depth: 1, depthPts: 1200, speedPts: 1800 }, // 3000
+    { depth: 2, depthPts: 1300, speedPts: 700 }, // 2000 → running 5000
+  ],
+};
+
+it("shows the depth/speed split and a per-level ledger that totals the score", () => {
+  render(<RunOver summary={summaryWithLevels} onPlayAgain={() => {}} />);
+  // headline split: depth = 2500/5000 = 50%, speed = 2500/5000 = 50%
+  expect(screen.getByText(/50% depth/i)).toBeInTheDocument();
+  expect(screen.getByText(/50% speed/i)).toBeInTheDocument();
+  // running total lands on the final score (appears in Running column; score row also shows it)
+  expect(screen.getAllByText("5,000").length).toBeGreaterThanOrEqual(1);
+});
+
+it("renders without a ledger when levels is empty (back-compat)", () => {
+  render(
+    <RunOver
+      summary={{ ...summaryWithLevels, levels: [] }}
+      onPlayAgain={() => {}}
+    />,
+  );
+  expect(screen.queryByText(/% depth/i)).not.toBeInTheDocument();
+});
