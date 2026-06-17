@@ -1,26 +1,40 @@
 @import "tailwindcss";
 
+@theme {
+  /* surfaces */
+  --color-bg: #eef1fb;
+  --color-bg-2: #e7eaf9;
+  --color-board: #ffffff;
+  --color-cell: #ffffff;
+  --color-cell-given: #f6f7fd;
+  --color-line: #ecedf7;
+  --color-divider: #d4d6ee;   /* 3x3 box dividers (named 'divider', not 'box', to avoid Tailwind box-sizing confusion) */
+  /* ink + accents */
+  --color-ink: #171a2b;
+  --color-muted: #8a90ae;
+  --color-cand: #a3a8c2;
+  --color-accent: #ff3d77;      /* hot coral-pink primary */
+  --color-accent-2: #ee2566;
+  --color-cyan: #22d3ee;        /* electric secondary */
+  --color-accent-soft: #ffe3ec; /* legal-target fill */
+  --color-entered: #0cb7d4;     /* player-entered numerals */
+  --color-mint: #06ce96;        /* completed digit */
+  --color-mint-soft: #dffbef;
+  --font-sans: var(--font-geist-sans, ui-rounded, system-ui, sans-serif);
+  --radius-cell: 8px;
+  --radius-card: 16px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --glow-accent: 0 10px 28px rgba(255, 61, 119, 0.4);
+  --cursor-glow: 0 6px 18px rgba(255, 61, 119, 0.28);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(900px 520px at 18% -8%, rgba(255, 61, 119, 0.13), transparent 60%),
+    radial-gradient(900px 520px at 100% 0%, rgba(34, 211, 238, 0.12), transparent 55%),
+    linear-gradient(180deg, var(--color-bg), var(--color-bg-2));
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
 }
