@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import "@/tests/support/jsdomLocalStorage";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createLocalAdapter } from "@/lib/data/localAdapter";
 import { EMPTY_BESTS } from "@/lib/data/types";
@@ -13,29 +14,6 @@ const sum = (over: Partial<RunSummary>): RunSummary => ({
   seed: 1,
   ...over,
 });
-
-// Polyfill localStorage for jsdom if needed
-if (!window.localStorage || typeof window.localStorage.clear !== "function") {
-  const store: Record<string, string> = {};
-  window.localStorage = {
-    getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      Object.keys(store).forEach((key) => {
-        delete store[key];
-      });
-    },
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: (index: number) => Object.keys(store)[index] ?? null,
-  } as Storage;
-}
 
 describe("localAdapter", () => {
   beforeEach(() => window.localStorage.clear());
