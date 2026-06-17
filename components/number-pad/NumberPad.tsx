@@ -42,7 +42,8 @@ export function NumberPad({ grid, activeDigit, onDigit }: NumberPadProps) {
               active
                 ? "text-white"
                 : done
-                  ? "text-[var(--color-cand)]"
+                  ? // Completed digit: mint green, matching the board's solved numerals
+                    "text-mint"
                   : "text-[var(--color-ink)] active:scale-95",
             ]
               .filter(Boolean)

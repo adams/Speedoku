@@ -13,12 +13,20 @@ const grid: Grid = new Array(81).fill(0);
 grid[0] = 7;
 
 describe("NumberPad", () => {
-  it("shows remaining counts and greys a completed digit", () => {
+  it("marks a completed digit done and shows remaining counts", () => {
     render(<NumberPad grid={grid} activeDigit={null} onDigit={() => {}} />);
     const five = screen.getByRole("button", { name: /digit 5/i });
     expect(five.dataset.done).toBe("true");
     const seven = screen.getByRole("button", { name: /digit 7/i });
     expect(seven).toHaveTextContent("8"); // remaining
+  });
+
+  it("shows a completed digit in mint green (board parity), not grey", () => {
+    render(<NumberPad grid={grid} activeDigit={null} onDigit={() => {}} />);
+    const five = screen.getByRole("button", { name: /digit 5/i }); // completed
+    expect(five.className).toContain("text-mint");
+    const seven = screen.getByRole("button", { name: /digit 7/i }); // incomplete
+    expect(seven.className).not.toContain("text-mint");
   });
 
   it("marks the active digit", () => {
