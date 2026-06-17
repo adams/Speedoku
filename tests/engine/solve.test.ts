@@ -26,6 +26,14 @@ function isValidSolution(g: number[]): boolean {
     }
     if (row.size !== 9 || col.size !== 9) return false;
   }
+  for (let br = 0; br < 3; br++) {
+    for (let bc = 0; bc < 3; bc++) {
+      const box = new Set<number>();
+      for (let r = 0; r < 3; r++)
+        for (let c = 0; c < 3; c++) box.add(g[(br * 3 + r) * 9 + (bc * 3 + c)]);
+      if (box.size !== 9) return false;
+    }
+  }
   return true;
 }
 
