@@ -79,12 +79,12 @@ export function useInputController(
             dir: 1,
           });
           break;
-        // Tab / Shift+Tab walk every empty cell forward / backward.
+        // Tab / Shift+Tab cycle the active number to the next / previous
+        // non-completed digit in the bottom selector (arrows own board nav).
         case "Tab":
           e.preventDefault();
           store.getState().dispatch({
-            type: "skipToNextCell",
-            traversal: "empty",
+            type: "cycleNumber",
             dir: e.shiftKey ? -1 : 1,
           });
           break;

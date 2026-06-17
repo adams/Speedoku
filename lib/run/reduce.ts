@@ -80,6 +80,19 @@ function nextIncompleteDigit(grid: Grid, from: number): number | null {
   return null;
 }
 
+// Walk digits 1–9 in `dir` (wrapping) from `from`, returning the first that still
+// has placements remaining (count < 9). Unlike `nextIncompleteDigit`, this does
+// NOT require a currently-legal cell — Tab lands on any non-completed number, even
+// one with no legal placement right now (activeCell then resolves to null). Pass
+// `from = 0` (before 1) or `from = 10` (after 9) to start cleanly with no active digit.
+function stepIncompleteDigit(grid: Grid, from: number, dir: Dir): number | null {
+  for (let i = 1; i <= 9; i++) {
+    const d = (((from - 1 + i * dir) % 9) + 9) % 9 + 1;
+    if (digitCount(grid, d) < 9) return d;
+  }
+  return null;
+}
+
 // A puzzle should never open with a blank selector: aim at the lowest
 // non-solved digit and its first legal cell. Used on run start and on every
 // depth advance.
@@ -171,20 +184,22 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
         activeCell: cells.length ? cells[0] : null,
       };
     }
+    case "cycleNumber": {
+      // Directional null-start: 0 = before digit 1 (dir 1 → lowest incomplete),
+      // 10 = after digit 9 (dir -1 → highest incomplete).
+      const from = state.activeDigit ?? (intent.dir === 1 ? 0 : 10);
+      const nd = stepIncompleteDigit(state.grid, from, intent.dir);
+      if (nd == null) return state; // every digit complete → no change
+      const cells = cellsForDigit(state.grid, nd);
+      return { ...state, activeDigit: nd, activeCell: cells.length ? cells[0] : null };
+    }
     case "skipToNextCell": {
+      // Arrows walk only the valid cells for the active digit, directionally
+      // (row vs column). Number-selector movement is its own intent (cycleNumber).
+      if (state.activeDigit == null) return state;
       const dir: Dir = intent.dir ?? 1;
-      // Tab/Shift+Tab walk every empty cell in reading order; arrows walk only
-      // the valid cells for the active digit, directionally (row vs column).
-      let pool: number[];
-      let axis: Axis;
-      if (intent.traversal === "empty") {
-        pool = emptyCells(state.grid);
-        axis = "row";
-      } else {
-        if (state.activeDigit == null) return state;
-        pool = cellsForDigit(state.grid, state.activeDigit);
-        axis = intent.axis ?? "row";
-      }
+      const pool = cellsForDigit(state.grid, state.activeDigit);
+      const axis: Axis = intent.axis ?? "row";
       const from = state.activeCell ?? -1;
       const next = stepInSet(orderCells(pool, axis), from, dir);
       return { ...state, activeCell: next };

@@ -85,7 +85,7 @@ describe("useInputController", () => {
     expect(store.getState().state.activeDigit).toBe(5);
   });
 
-  it("arrows dispatch directional valid-cell moves; Tab/Shift+Tab walk empties", () => {
+  it("arrows dispatch directional valid-cell moves; Tab/Shift+Tab cycle the number selector", () => {
     setup();
     const intents: Intent[] = [];
     store.setState({ dispatch: (i: Intent) => intents.push(i) });
@@ -104,8 +104,8 @@ describe("useInputController", () => {
       { type: "skipToNextCell", traversal: "valid", axis: "row", dir: -1 },
       { type: "skipToNextCell", traversal: "valid", axis: "col", dir: 1 },
       { type: "skipToNextCell", traversal: "valid", axis: "col", dir: -1 },
-      { type: "skipToNextCell", traversal: "empty", dir: 1 },
-      { type: "skipToNextCell", traversal: "empty", dir: -1 },
+      { type: "cycleNumber", dir: 1 },
+      { type: "cycleNumber", dir: -1 },
     ]);
   });
 

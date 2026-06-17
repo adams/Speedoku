@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Grid } from "@/lib/engine";
-import { isSafe, isSolvable, mulberry32, solve } from "@/lib/engine";
+import {
+  cellsForDigit,
+  isSafe,
+  isSolvable,
+  mulberry32,
+  solve,
+} from "@/lib/engine";
 import type { BankFile } from "@/lib/engine/banks";
 import fixture from "@/lib/engine/banks/banks.fixture.json";
 import { makeDefaultConfig } from "@/lib/run/config";
@@ -27,6 +33,21 @@ const ONE_EMPTY: Grid = [
   5, 6, 9, 6, 1, 5, 3, 7, 2, 8, 4, 2, 8, 7, 4, 1, 9, 6, 3, 5, 3, 4, 5, 2, 8, 6,
   1, 7, 0,
 ];
+
+// A fully-solved grid (every digit count = 9). Built by solving ONE_EMPTY.
+const SOLVED: Grid = (() => {
+  const s = solve(ONE_EMPTY);
+  if (!s) throw new Error("ONE_EMPTY should be solvable");
+  return s;
+})();
+
+// SOLVED with one occurrence of each listed digit removed → those digits become
+// incomplete (count 8), the rest stay complete (count 9).
+function withIncomplete(digits: number[]): Grid {
+  const g = SOLVED.slice();
+  for (const d of digits) g[g.indexOf(d)] = 0;
+  return g;
+}
 
 // A fresh run: depth-1 real bank puzzle, clock not yet started.
 function mkInit(): RunState {
@@ -212,46 +233,64 @@ describe("reduce — directional cursor movement (arrows)", () => {
   });
 });
 
-describe("reduce — reverse empty-cell traversal (Tab / Shift+Tab)", () => {
-  const SPARSE: Grid = new Array(81).fill(1);
-  for (const i of [5, 20, 60]) SPARSE[i] = 0;
-  const at = (cell: number): RunState => ({
-    ...playingState(SPARSE),
-    activeCell: cell,
+describe("reduce — cycleNumber (Tab walks the number selector)", () => {
+  // Incomplete digits: 1, 5, 7 (one of each removed from a solved grid).
+  const MULTI = withIncomplete([1, 5, 7]);
+  const onDigit = (grid: Grid, digit: number | null): RunState => ({
+    ...playingState(grid),
+    activeDigit: digit,
+    activeCell: digit == null ? null : (cellsForDigit(grid, digit)[0] ?? null),
+  });
+  const cyc = (s: RunState, dir: 1 | -1): RunState =>
+    reduce(s, { type: "cycleNumber", dir }, mkCtx(0));
+
+  it("Tab forward lands on the next non-completed digit, skipping completed", () => {
+    // from 5 → 6 is complete → next incomplete is 7
+    expect(cyc(onDigit(MULTI, 5), 1).activeDigit).toBe(7);
   });
 
-  it("Tab (dir 1) walks empties forward, wrapping", () => {
-    expect(
-      reduce(
-        at(20),
-        { type: "skipToNextCell", traversal: "empty", dir: 1 },
-        mkCtx(0),
-      ).activeCell,
-    ).toBe(60);
-    expect(
-      reduce(
-        at(60),
-        { type: "skipToNextCell", traversal: "empty", dir: 1 },
-        mkCtx(0),
-      ).activeCell,
-    ).toBe(5);
+  it("Tab forward wraps 9→1", () => {
+    // from 7 → 8, 9 complete → wrap → 1
+    expect(cyc(onDigit(MULTI, 7), 1).activeDigit).toBe(1);
   });
 
-  it("Shift+Tab (dir -1) walks empties backward, wrapping", () => {
-    expect(
-      reduce(
-        at(20),
-        { type: "skipToNextCell", traversal: "empty", dir: -1 },
-        mkCtx(0),
-      ).activeCell,
-    ).toBe(5);
-    expect(
-      reduce(
-        at(5),
-        { type: "skipToNextCell", traversal: "empty", dir: -1 },
-        mkCtx(0),
-      ).activeCell,
-    ).toBe(60);
+  it("Shift+Tab steps backward, skipping completed", () => {
+    // from 5 → 4, 3, 2 complete → prev incomplete is 1
+    expect(cyc(onDigit(MULTI, 5), -1).activeDigit).toBe(1);
+  });
+
+  it("Shift+Tab wraps 1→9", () => {
+    // from 1 backward → wrap → highest incomplete is 7
+    expect(cyc(onDigit(MULTI, 1), -1).activeDigit).toBe(7);
+  });
+
+  it("aims the landed digit's first legal cell", () => {
+    const s = cyc(onDigit(MULTI, 5), 1);
+    expect(s.activeDigit).toBe(7);
+    expect(s.activeCell).toBe(cellsForDigit(MULTI, 7)[0]);
+  });
+
+  it("with no active digit, Tab picks the lowest incomplete and Shift+Tab the highest", () => {
+    expect(cyc(onDigit(MULTI, null), 1).activeDigit).toBe(1);
+    expect(cyc(onDigit(MULTI, null), -1).activeDigit).toBe(7);
+  });
+
+  it("lands on a remaining digit even with no legal cell (activeCell null)", () => {
+    // Fully filled with 1s: digits 2..9 are 'remaining' but no empty cell exists.
+    const FILLED = new Array(81).fill(1) as Grid;
+    const s = cyc(onDigit(FILLED, 1), 1);
+    expect(s.activeDigit).toBe(2);
+    expect(s.activeCell).toBeNull();
+  });
+
+  it("is a no-op move when only the active digit remains", () => {
+    const ONLY4 = withIncomplete([4]);
+    expect(cyc(onDigit(ONLY4, 4), 1).activeDigit).toBe(4);
+  });
+
+  it("leaves state untouched when every digit is complete", () => {
+    const before = onDigit(SOLVED, 5);
+    expect(cyc(before, 1)).toBe(before);
   });
 });
 

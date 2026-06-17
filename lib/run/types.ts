@@ -3,7 +3,9 @@ import type { BankFile } from "@/lib/engine/banks";
 
 export type Mode = "hints-on" | "hints-off";
 export type RunStatus = "playing" | "runOver";
-export type Traversal = "empty" | "valid";
+// Arrow cursor movement walks the active digit's valid cells. (Tab/Shift+Tab no
+// longer traverse empty cells — they cycle the number selector via cycleNumber.)
+export type Traversal = "valid";
 // Cursor-movement axis + direction. `row` walks reading order (left/right),
 // `col` walks column-major (up/down); `dir` is +1 forward / -1 backward.
 export type Axis = "row" | "col";
@@ -73,6 +75,9 @@ export type Intent =
       axis?: Axis;
       dir?: Dir;
     }
+  // Tab / Shift+Tab cycle the active number to the next / previous non-completed
+  // digit in the bottom selector (board navigation belongs to the arrows).
+  | { type: "cycleNumber"; dir: Dir }
   | { type: "selectCell"; cell: number }
   | { type: "placeNumber"; cell: number }
   // Stamps the clock for depth 1 at the moment the run actually begins
