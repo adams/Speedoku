@@ -85,9 +85,13 @@ function nextIncompleteDigit(grid: Grid, from: number): number | null {
 // NOT require a currently-legal cell — Tab lands on any non-completed number, even
 // one with no legal placement right now (activeCell then resolves to null). Pass
 // `from = 0` (before 1) or `from = 10` (after 9) to start cleanly with no active digit.
-function stepIncompleteDigit(grid: Grid, from: number, dir: Dir): number | null {
+function stepIncompleteDigit(
+  grid: Grid,
+  from: number,
+  dir: Dir,
+): number | null {
   for (let i = 1; i <= 9; i++) {
-    const d = (((from - 1 + i * dir) % 9) + 9) % 9 + 1;
+    const d = ((((from - 1 + i * dir) % 9) + 9) % 9) + 1;
     if (digitCount(grid, d) < 9) return d;
   }
   return null;
@@ -191,7 +195,11 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
       const nd = stepIncompleteDigit(state.grid, from, intent.dir);
       if (nd == null) return state; // every digit complete → no change
       const cells = cellsForDigit(state.grid, nd);
-      return { ...state, activeDigit: nd, activeCell: cells.length ? cells[0] : null };
+      return {
+        ...state,
+        activeDigit: nd,
+        activeCell: cells.length ? cells[0] : null,
+      };
     }
     case "skipToNextCell": {
       // Arrows walk only the valid cells for the active digit, directionally
