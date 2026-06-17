@@ -14,17 +14,31 @@ const sum = (over: Partial<RunSummary>): RunSummary => ({
   ...over,
 });
 
+// Polyfill localStorage for jsdom if needed
+if (!window.localStorage || typeof window.localStorage.clear !== "function") {
+  const store: Record<string, string> = {};
+  window.localStorage = {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      Object.keys(store).forEach((key) => {
+        delete store[key];
+      });
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+  } as Storage;
+}
+
 describe("localAdapter", () => {
-  beforeEach(() => {
-    // Clear all localStorage keys
-    const keys = Object.keys(window.localStorage);
-    keys.forEach((key) => {
-      window.localStorage.removeItem(key);
-    });
-    if (typeof window.localStorage.clear === "function") {
-      window.localStorage.clear();
-    }
-  });
+  beforeEach(() => window.localStorage.clear());
 
   it("returns empty bests when nothing is stored", async () => {
     expect(await createLocalAdapter().getBests("hints-on")).toEqual(
