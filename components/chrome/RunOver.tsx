@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Bests, NewBest } from "@/lib/data/types";
 import { EMPTY_BESTS } from "@/lib/data/types";
 import type { RunSummary } from "@/lib/run/types";
@@ -16,18 +17,24 @@ export function RunOver({
   bests?: Bests;
   isNewBest?: NewBest;
 }) {
+  // Enter restarts the run straight from the run-over card.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onPlayAgain();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onPlayAgain]);
+
   const rows: { label: string; value: string; isNew: boolean }[] = [
     { label: "Depth", value: String(summary.depth), isNew: isNewBest.depth },
     {
       label: "Score",
       value: summary.score.toLocaleString(),
       isNew: isNewBest.score,
-    },
-    {
-      label: "Fastest solve",
-      value:
-        summary.fastestSolveMs == null ? "—" : mmss(summary.fastestSolveMs),
-      isNew: isNewBest.fastest,
     },
     { label: "Total time", value: mmss(summary.totalMs), isNew: false },
   ];

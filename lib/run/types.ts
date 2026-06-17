@@ -2,7 +2,7 @@ import type { Grid, Rng } from "@/lib/engine";
 import type { BankFile } from "@/lib/engine/banks";
 
 export type Mode = "hints-on" | "hints-off";
-export type RunStatus = "tutorial" | "playing" | "runOver";
+export type RunStatus = "playing" | "runOver";
 export type Traversal = "empty" | "valid";
 // Cursor-movement axis + direction. `row` walks reading order (left/right),
 // `col` walks column-major (up/down); `dir` is +1 forward / -1 backward.
@@ -31,7 +31,7 @@ export interface RunState {
   status: RunStatus;
   mode: Mode;
   seed: number;
-  depth: number; // 1 = tutorial, 2+ = scored
+  depth: number; // 1 = first puzzle; every depth is timed + scored
   grid: Grid;
   rating: number; // target rating of the current puzzle
   activeDigit: number | null;
@@ -61,7 +61,10 @@ export type Intent =
       dir?: Dir;
     }
   | { type: "selectCell"; cell: number }
-  | { type: "placeNumber"; cell: number };
+  | { type: "placeNumber"; cell: number }
+  // Stamps the clock for depth 1 at the moment the run actually begins
+  // (board shown). Every later puzzle is stamped by `advance` on entry.
+  | { type: "startRun" };
 
 export interface RunSummary {
   depth: number;

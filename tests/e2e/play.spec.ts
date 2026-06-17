@@ -12,9 +12,9 @@ test("start a run and place a number", async ({ page }) => {
   // board + pad visible
   await expect(page.getByRole("button", { name: /digit 1/i })).toBeVisible();
 
-  // place the forced 2 into the first tutorial cell: select then commit
+  // select a digit via the pad, then place it with Submit
   await page.getByRole("button", { name: /digit 2/i }).click();
-  await page.getByRole("button", { name: /digit 2/i }).click();
+  await page.getByRole("button", { name: /^submit$/i }).click();
 
   await expect(page.getByText(/depth/i)).toBeVisible();
   expect(errors).toEqual([]);

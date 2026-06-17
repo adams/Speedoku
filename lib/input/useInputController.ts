@@ -6,21 +6,24 @@ import type { RunStoreApi } from "@/lib/run/useRunStore";
 export interface InputHandlers {
   onDigit: (d: number) => void;
   onSelectCell: (cell: number) => void;
+  onSubmit: () => void;
 }
 
 export function useInputController(store: RunStoreApi): InputHandlers {
   const handlers = useMemo<InputHandlers>(() => {
-    const onDigit = (d: number) => {
-      const s = store.getState().state;
-      if (s.activeDigit === d && s.activeCell != null) {
-        store.getState().dispatch({ type: "placeNumber", cell: s.activeCell });
-      } else {
-        store.getState().dispatch({ type: "selectNumber", digit: d });
-      }
-    };
+    // Digits only ever choose the active number — they never place. Placement
+    // happens solely via Submit (button) / Enter (keyboard) on the active cell.
+    const onDigit = (d: number) =>
+      store.getState().dispatch({ type: "selectNumber", digit: d });
     const onSelectCell = (cell: number) =>
       store.getState().dispatch({ type: "selectCell", cell });
-    return { onDigit, onSelectCell };
+    const onSubmit = () => {
+      const s = store.getState().state;
+      if (s.activeCell != null) {
+        store.getState().dispatch({ type: "placeNumber", cell: s.activeCell });
+      }
+    };
+    return { onDigit, onSelectCell, onSubmit };
   }, [store]);
 
   useEffect(() => {
@@ -74,11 +77,8 @@ export function useInputController(store: RunStoreApi): InputHandlers {
           });
           break;
         case "Enter": {
-          const s = store.getState().state;
-          if (s.activeCell != null)
-            store
-              .getState()
-              .dispatch({ type: "placeNumber", cell: s.activeCell });
+          e.preventDefault();
+          handlers.onSubmit();
           break;
         }
       }

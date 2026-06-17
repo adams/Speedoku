@@ -41,10 +41,16 @@ export function runAuto(
   const mistakeRng = mulberry32(opts.seed ^ 0x9e3779b9);
 
   let now = 0;
-  let state: RunState = initRun(config);
+  let state: RunState = initRun(config, bank, rng);
+  // Start depth 1's clock, exactly as real play does when the board appears.
+  state = reduce(
+    state,
+    { type: "startRun" },
+    { nowMs: now, bank, rng, config },
+  );
   let solution = solve(state.grid);
 
-  // Safety bound on total moves (tutorial + maxDepth puzzles × ≤81 cells).
+  // Safety bound on total moves (maxDepth puzzles × ≤81 cells).
   const moveBudget = (maxDepth + 2) * 81 + 10;
   for (let i = 0; i < moveBudget; i++) {
     if (state.status === "runOver") break;

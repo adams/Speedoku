@@ -1,9 +1,9 @@
-import type { Grid } from "@/lib/engine";
+import type { Grid, Rng } from "@/lib/engine";
 import { cellsForDigit, isSafe, isSolvable } from "@/lib/engine";
+import type { BankFile } from "@/lib/engine/banks";
 import { pickPuzzle } from "@/lib/engine/banks";
 import { targetRating } from "./curve";
-import { puzzleScore } from "./scorer";
-import { TUTORIAL_GRID } from "./tutorial";
+import { puzzleCredit, puzzleScore } from "./scorer";
 import type {
   Axis,
   Ctx,
@@ -122,15 +122,21 @@ function advance(state: RunState, ctx: Ctx): RunState {
   };
 }
 
-export function initRun(config: RunConfig): RunState {
-  const grid = TUTORIAL_GRID.slice();
+// The run's first puzzle is a real bank puzzle, timed and scored exactly like
+// every later depth — there is no special untimed tutorial in the core loop.
+// The clock is left unstarted (`puzzleStartMs: null`) until `startRun` stamps it
+// when the board actually appears; later puzzles are stamped by `advance`.
+export function initRun(config: RunConfig, bank: BankFile, rng: Rng): RunState {
+  const depth = 1;
+  const rating = targetRating(depth, config);
+  const grid = pickPuzzle(bank, rating, rng);
   return {
-    status: "tutorial",
+    status: "playing",
     mode: config.mode,
     seed: config.seed,
-    depth: 1,
+    depth,
     grid,
-    rating: config.tutorialRating,
+    rating,
     ...lowestSelection(grid),
     puzzleStartMs: null,
     score: 0,
@@ -144,6 +150,11 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
   if (state.status === "runOver") return state;
 
   switch (intent.type) {
+    case "startRun": {
+      // Idempotent: start depth 1's clock the moment play begins, once.
+      if (state.puzzleStartMs != null) return state;
+      return { ...state, puzzleStartMs: ctx.nowMs };
+    }
     case "selectNumber": {
       const cells = cellsForDigit(state.grid, intent.digit);
       return {
@@ -192,14 +203,18 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
           state.emptyAtStart > 0
             ? (state.emptyAtStart - emptyNow) / state.emptyAtStart
             : 0;
-        const credit = Math.round(
-          puzzleScore(state.rating, solveMs, ctx.config) * progress,
+        const credit = puzzleCredit(
+          state.rating,
+          solveMs,
+          progress,
+          ctx.config,
         );
         return {
           ...state,
           grid,
           status: "runOver",
           score: state.score + credit,
+          totalMs: state.totalMs + solveMs,
         };
       }
       if (isComplete(grid)) {

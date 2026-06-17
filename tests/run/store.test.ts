@@ -6,14 +6,15 @@ import { createRunStore } from "@/lib/run/store";
 const bank = fixture as BankFile;
 
 describe("createRunStore", () => {
-  it("starts in tutorial and dispatches intents through reduce", () => {
+  it("starts a playing run and dispatches intents through reduce", () => {
     const t = 0;
     const store = createRunStore(bank, {
       seed: 3,
       mode: "hints-on",
       clock: () => t,
     });
-    expect(store.getState().state.status).toBe("tutorial");
+    expect(store.getState().state.status).toBe("playing");
+    expect(store.getState().state.depth).toBe(1);
 
     store.getState().dispatch({ type: "selectNumber", digit: 2 });
     expect(store.getState().state.activeDigit).toBe(2);

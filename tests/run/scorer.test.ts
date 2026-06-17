@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   difficultyWeight,
   par,
+  puzzleCredit,
   puzzleFloor,
   puzzleMax,
   puzzleScore,
@@ -54,6 +55,15 @@ describe("puzzleScore", () => {
   });
   it("is never zero or negative", () => {
     expect(puzzleScore(500, 10_000_000, config)).toBeGreaterThan(0);
+  });
+});
+
+describe("puzzleCredit", () => {
+  it("scales the puzzle value by progress", () => {
+    const full = puzzleScore(100, 5000, config);
+    expect(puzzleCredit(100, 5000, 1, config)).toBe(full);
+    expect(puzzleCredit(100, 5000, 0.5, config)).toBe(Math.round(full * 0.5));
+    expect(puzzleCredit(100, 5000, 0, config)).toBe(0);
   });
 });
 

@@ -24,7 +24,7 @@ export function createRunStore(
   const clock = opts.clock ?? (() => performance.now());
 
   return createStore<RunStore>((set, get) => ({
-    state: initRun(config),
+    state: initRun(config, bank, rng),
     config,
     dispatch(intent: Intent) {
       const ctx: Ctx = { nowMs: clock(), bank, rng, config };

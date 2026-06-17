@@ -27,7 +27,24 @@ describe("chrome", () => {
     render(<RunOver summary={summary} onPlayAgain={onPlayAgain} />);
     expect(screen.getByText("7")).toBeInTheDocument();
     expect(screen.getByText("1,240")).toBeInTheDocument();
+    // The card is run-level only — no per-puzzle "fastest solve" row.
+    expect(screen.queryByText(/fastest/i)).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /play again/i }));
+    expect(onPlayAgain).toHaveBeenCalledOnce();
+  });
+
+  it("RunOver fires onPlayAgain on Enter", async () => {
+    const onPlayAgain = vi.fn();
+    const summary: RunSummary = {
+      depth: 2,
+      score: 53,
+      fastestSolveMs: null,
+      totalMs: 8000,
+      mode: "hints-on",
+      seed: 1,
+    };
+    render(<RunOver summary={summary} onPlayAgain={onPlayAgain} />);
+    await userEvent.keyboard("{Enter}");
     expect(onPlayAgain).toHaveBeenCalledOnce();
   });
 

@@ -20,8 +20,10 @@ describe("useRunSelector", () => {
       return <div data-testid="d">{digit ?? "none"}</div>;
     }
     render(<View />);
-    // A run opens pre-aimed at the lowest non-solved digit (tutorial → 2).
-    expect(screen.getByTestId("d").textContent).toBe("2");
+    // A run opens pre-aimed at the lowest non-solved digit (never blank).
+    const opening = screen.getByTestId("d").textContent;
+    expect(opening).not.toBe("none");
+    expect(Number(opening)).toBeGreaterThanOrEqual(1);
     act(() => store.getState().dispatch({ type: "selectNumber", digit: 3 }));
     expect(screen.getByTestId("d").textContent).toBe("3");
   });

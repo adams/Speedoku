@@ -28,7 +28,7 @@ export default function PlayPage() {
   const activeDigit = useRunSelector(store, (s) => s.state.activeDigit);
   const activeCell = useRunSelector(store, (s) => s.state.activeCell);
   const status = useRunSelector(store, (s) => s.state.status);
-  const { onDigit, onSelectCell } = useInputController(store);
+  const { onDigit, onSelectCell, onSubmit } = useInputController(store);
 
   const adapter = useMemo(() => createLocalAdapter(), []);
   const { bests, recordRun } = usePersistence(adapter, "hints-on");
@@ -41,6 +41,14 @@ export default function PlayPage() {
     recordedFor.current = null;
     setIsNewBest(null);
   }, [store]);
+
+  // Start depth 1's clock the moment the board is shown — on first Start and on
+  // every Play-again (new store, phase already "run"). Idempotent via startRun.
+  useEffect(() => {
+    if (phase === "run") {
+      store.getState().dispatch({ type: "startRun" });
+    }
+  }, [phase, store]);
 
   // Record the run exactly once when it ends.
   useEffect(() => {
@@ -96,8 +104,26 @@ export default function PlayPage() {
 
           <NumberPad grid={grid} activeDigit={activeDigit} onDigit={onDigit} />
 
+          {/* Submit — the only way to place. The pad just picks the number. */}
+          <button
+            type="button"
+            onClick={onSubmit}
+            // Don't let a mouse click leave the button focused, or a later Enter
+            // would fire both the button and the window handler → double-place.
+            onMouseDown={(e) => e.preventDefault()}
+            disabled={status !== "playing" || activeCell == null}
+            className="relative w-full overflow-hidden rounded-[--radius-card] py-3.5 text-base font-extrabold tracking-wide text-white transition-transform active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
+            style={{
+              background:
+                "linear-gradient(140deg,var(--color-accent) 0%,var(--color-cyan) 140%)",
+              boxShadow: "var(--glow-accent)",
+            }}
+          >
+            Submit
+          </button>
+
           <p className="text-center text-[12.5px] font-semibold text-[--color-muted] lg:hidden">
-            Tap a number to aim · tap again to place · arrows move · Tab jumps
+            Tap a number to aim · arrows move · Submit (or Enter) places
           </p>
         </div>
 
@@ -142,10 +168,10 @@ export default function PlayPage() {
             </p>
             <dl className="flex flex-col gap-2.5">
               {[
-                ["Select / place", "1–9"],
+                ["Select number", "1–9"],
                 ["Move · valid cells", "← ↑ → ↓"],
                 ["Skip empty cell", "Tab ⇧Tab"],
-                ["Place at cursor", "Enter"],
+                ["Submit / place", "Enter"],
               ].map(([label, keys]) => (
                 <div
                   key={label}

@@ -28,6 +28,25 @@ const ONE_EMPTY: Grid = [
   1, 7, 0,
 ];
 
+// A fresh run: depth-1 real bank puzzle, clock not yet started.
+function mkInit(): RunState {
+  return initRun(config, bank, mulberry32(config.seed));
+}
+
+// Drive the reducer to fully solve the current puzzle (advancing one depth).
+function completeCurrentPuzzle(s: RunState, nowMs: number): RunState {
+  const sol = solve(s.grid);
+  if (!sol) throw new Error("expected a solvable puzzle");
+  const startDepth = s.depth;
+  while (s.status === "playing" && s.depth === startDepth) {
+    const cell = s.grid.indexOf(0);
+    if (cell === -1) break;
+    s = reduce(s, { type: "selectNumber", digit: sol[cell] }, mkCtx(nowMs));
+    s = reduce(s, { type: "placeNumber", cell }, mkCtx(nowMs));
+  }
+  return s;
+}
+
 function playingState(grid: Grid): RunState {
   return {
     status: "playing",
@@ -68,19 +87,35 @@ function findKillerMove(puzzle: Grid): { cell: number; digit: number } | null {
 }
 
 describe("initRun", () => {
-  it("starts in tutorial at depth 1", () => {
-    const s = initRun(config);
-    expect(s.status).toBe("tutorial");
+  it("starts a playing, depth-1 puzzle with the clock unstarted", () => {
+    const s = mkInit();
+    expect(s.status).toBe("playing");
     expect(s.depth).toBe(1);
     expect(s.score).toBe(0);
+    expect(s.puzzleStartMs).toBeNull(); // startRun stamps it when play begins
   });
 
-  it("opens with the lowest non-solved digit + its first legal cell selected", () => {
-    const s = initRun(config);
-    // The tutorial is missing one each of 2, 3, 7, 8 (1/4/5/6/9 are complete),
-    // so the lowest non-solved digit is 2, and the only legal cell for a 2 is 8.
-    expect(s.activeDigit).toBe(2);
-    expect(s.activeCell).toBe(8);
+  it("opens pre-aimed at the lowest non-solved digit + its first legal cell", () => {
+    const s = mkInit();
+    expect(s.activeDigit).not.toBeNull();
+    expect(s.activeCell).not.toBeNull();
+    const d = s.activeDigit as number;
+    const cell = s.activeCell as number;
+    for (let lower = 1; lower < d; lower++) {
+      expect(countDigit(s.grid, lower)).toBe(9);
+    }
+    expect(countDigit(s.grid, d)).toBeLessThan(9);
+    expect(s.grid[cell]).toBe(0);
+    expect(isSafe(s.grid, cell, d)).toBe(true);
+  });
+
+  it("startRun stamps the depth-1 clock once, then is idempotent", () => {
+    let s = mkInit();
+    expect(s.puzzleStartMs).toBeNull();
+    s = reduce(s, { type: "startRun" }, mkCtx(2000));
+    expect(s.puzzleStartMs).toBe(2000);
+    s = reduce(s, { type: "startRun" }, mkCtx(9999));
+    expect(s.puzzleStartMs).toBe(2000); // not restamped
   });
 });
 
@@ -220,18 +255,12 @@ describe("reduce — reverse empty-cell traversal (Tab / Shift+Tab)", () => {
 
 describe("advance — next puzzle opens pre-selected", () => {
   it("a fresh puzzle starts with the lowest non-solved digit + a legal cell", () => {
-    // Complete the tutorial to advance into a real (depth-2) puzzle.
-    let s = initRun(config);
-    for (const [cell, digit] of [
-      [8, 2],
-      [17, 8],
-      [26, 7],
-      [35, 3],
-    ] as const) {
-      s = reduce(s, { type: "selectNumber", digit }, mkCtx(1000));
-      s = reduce(s, { type: "placeNumber", cell }, mkCtx(1000));
-    }
+    // Solve depth 1 to advance into the depth-2 puzzle.
+    let s = mkInit();
+    s = reduce(s, { type: "startRun" }, mkCtx(1000));
+    s = completeCurrentPuzzle(s, 1000);
     expect(s.status).toBe("playing");
+    expect(s.depth).toBe(2);
     // The selector must never be blank on a fresh puzzle.
     expect(s.activeDigit).not.toBeNull();
     expect(s.activeCell).not.toBeNull();
@@ -286,6 +315,21 @@ describe("reduce — death on unsolvable", () => {
     expect(s.score).toBeGreaterThan(0); // the fix: death is no longer a flat 0
   });
 
+  it("counts the death-puzzle elapsed toward total time", () => {
+    const seed = bank.bands[0].seeds[0] as Grid;
+    const kill = findKillerMove(seed);
+    expect(kill).not.toBeNull();
+    // biome-ignore lint/style/noNonNullAssertion: guarded by expect above
+    const { cell, digit } = kill!;
+
+    let s = playingState(seed); // puzzleStartMs = 0, totalMs = 0
+    s = reduce(s, { type: "selectNumber", digit }, mkCtx(0));
+    s = reduce(s, { type: "placeNumber", cell }, mkCtx(5000)); // solveMs = 5000
+
+    expect(s.status).toBe("runOver");
+    expect(summarize(s).totalMs).toBe(5000);
+  });
+
   it("runOver is terminal", () => {
     const over: RunState = { ...playingState(ONE_EMPTY), status: "runOver" };
     expect(reduce(over, { type: "selectNumber", digit: 1 }, mkCtx(0))).toBe(
@@ -294,22 +338,15 @@ describe("reduce — death on unsolvable", () => {
   });
 });
 
-describe("reduce — tutorial transitions to playing", () => {
-  it("completing the tutorial starts the timed run at depth 2 with no score", () => {
-    let s = initRun(config);
-    // tutorial empties are at 8,17,26,35 — each forced to its row's missing value.
-    for (const [cell, digit] of [
-      [8, 2],
-      [17, 8],
-      [26, 7],
-      [35, 3],
-    ] as const) {
-      s = reduce(s, { type: "selectNumber", digit }, mkCtx(1000));
-      s = reduce(s, { type: "placeNumber", cell }, mkCtx(1000));
-    }
-    expect(s.status).toBe("playing");
+describe("reduce — depth 1 is a timed, scored puzzle", () => {
+  it("completing depth 1 banks score + time and advances to depth 2", () => {
+    let s = mkInit();
+    s = reduce(s, { type: "startRun" }, mkCtx(0)); // clock starts at 0
+    s = completeCurrentPuzzle(s, 5000); // depth-1 solve takes 5000ms
     expect(s.depth).toBe(2);
-    expect(s.score).toBe(0);
-    expect(s.puzzleStartMs).toBe(1000);
+    expect(s.status).toBe("playing");
+    expect(s.score).toBeGreaterThan(0); // depth 1 now scores
+    expect(s.totalMs).toBe(5000); // depth-1 solve time is counted
+    expect(s.puzzleStartMs).toBe(5000); // depth-2 clock stamped on entry
   });
 });

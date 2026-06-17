@@ -40,3 +40,15 @@ export function puzzleScore(
     config.base * difficultyWeight(rating, config) * speedFactor,
   );
 }
+
+// Points the *current* puzzle would bank if the run ended right now: the full
+// puzzle value scaled by how much of it you've filled. This is the value death
+// credits and that a completed puzzle banks (progress = 1).
+export function puzzleCredit(
+  rating: number,
+  solveMs: number,
+  progress: number,
+  config: RunConfig,
+): number {
+  return Math.round(puzzleScore(rating, solveMs, config) * progress);
+}
