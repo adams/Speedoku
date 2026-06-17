@@ -17,7 +17,7 @@
   --color-accent-2: #ee2566;
   --color-cyan: #22d3ee;        /* electric secondary */
   --color-accent-soft: #ffe3ec; /* (reserved for warn/non-option signals) */
-  --color-cyan-soft: #d4f3fb;   /* legal-target fill — blue = an option */
+  --color-cyan-soft: #8fe3f3;   /* legal-target fill — saturated so options pop vs dimmed cells */
   --color-entered: #0cb7d4;     /* player-entered numerals */
   --color-mint: #06ce96;        /* completed digit */
   --color-mint-soft: #dffbef;

@@ -61,7 +61,7 @@ export function Cell(props: CellProps) {
     "relative flex aspect-square items-center justify-center",
     "select-none outline-none transition-[opacity,background-color,color] duration-150",
     // Focus Mode: fade cells the active digit can't use
-    dimmed ? "opacity-35" : "",
+    dimmed ? "opacity-30" : "",
     // cursor gets rounded corners and stacks above siblings
     isCursor ? "z-10 rounded-[var(--radius-cell)]" : "",
     // box divider classes injected by Board
