@@ -18,6 +18,9 @@ export interface RunConfig {
   slope: number;
   curvature: number;
   topRating: number; // bank ceiling; curve clamps here
+  // clue-count (empties) axis — optional; makeDefaultConfig derives them from the bank
+  floorEmpties?: number; // depth-1 empties (near-solved)
+  topEmpties?: number; // deep empties (~minimal)
   // scorer
   base: number;
   floorRatio: number;

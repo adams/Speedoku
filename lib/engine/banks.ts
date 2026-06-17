@@ -2,6 +2,11 @@ import type { Rng } from "./rng";
 import { randomTransform } from "./transform";
 import type { Grid } from "./types";
 
+export interface PickTarget {
+  rating: number;
+  empties: number;
+}
+
 export interface Band {
   lo: number;
   hi: number;
