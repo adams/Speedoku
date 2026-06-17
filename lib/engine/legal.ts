@@ -12,7 +12,7 @@ export function legalCandidates(grid: Grid): Mask[] {
   const out: Mask[] = new Array(81).fill(0);
   for (let s = 0; s < 81; s++) {
     if (grid[s] !== 0) continue;
-    let m = 0;
+    let m: Mask = 0;
     for (let d = 1; d <= 9; d++) if (isSafe(grid, s, d)) m |= bit(d);
     out[s] = m;
   }
