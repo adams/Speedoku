@@ -1,0 +1,30 @@
+import type { RunConfig } from "./types";
+
+function norm(rating: number, config: RunConfig): number {
+  const span = config.topRating - config.floorRating;
+  if (span <= 0) return 0;
+  const t = (rating - config.floorRating) / span;
+  return Math.max(0, Math.min(1, t));
+}
+
+export function par(rating: number, config: RunConfig): number {
+  const t = norm(rating, config);
+  return config.parFastSec + t * (config.parSlowSec - config.parFastSec);
+}
+
+export function difficultyWeight(rating: number, config: RunConfig): number {
+  return 1 + config.weightSlope * norm(rating, config);
+}
+
+export function puzzleScore(
+  rating: number,
+  solveMs: number,
+  config: RunConfig,
+): number {
+  const solveSec = Math.max(solveMs / 1000, 0.001);
+  const ratio = par(rating, config) / solveSec;
+  const speedFactor = Math.max(config.floorRatio, Math.min(config.cap, ratio));
+  return Math.round(
+    config.base * difficultyWeight(rating, config) * speedFactor,
+  );
+}
