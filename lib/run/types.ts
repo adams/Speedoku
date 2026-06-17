@@ -4,6 +4,10 @@ import type { BankFile } from "@/lib/engine/banks";
 export type Mode = "hints-on" | "hints-off";
 export type RunStatus = "tutorial" | "playing" | "runOver";
 export type Traversal = "empty" | "valid";
+// Cursor-movement axis + direction. `row` walks reading order (left/right),
+// `col` walks column-major (up/down); `dir` is +1 forward / -1 backward.
+export type Axis = "row" | "col";
+export type Dir = 1 | -1;
 
 export interface RunConfig {
   seed: number;
@@ -49,7 +53,12 @@ export interface Ctx {
 
 export type Intent =
   | { type: "selectNumber"; digit: number }
-  | { type: "skipToNextCell"; traversal: Traversal }
+  | {
+      type: "skipToNextCell";
+      traversal: Traversal;
+      axis?: Axis;
+      dir?: Dir;
+    }
   | { type: "selectCell"; cell: number }
   | { type: "placeNumber"; cell: number };
 

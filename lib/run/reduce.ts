@@ -4,7 +4,15 @@ import { pickPuzzle } from "@/lib/engine/banks";
 import { targetRating } from "./curve";
 import { puzzleScore } from "./scorer";
 import { TUTORIAL_GRID } from "./tutorial";
-import type { Ctx, Intent, RunConfig, RunState, RunSummary } from "./types";
+import type {
+  Axis,
+  Ctx,
+  Dir,
+  Intent,
+  RunConfig,
+  RunState,
+  RunSummary,
+} from "./types";
 
 function place(grid: Grid, cell: number, d: number): Grid {
   const g = grid.slice();
@@ -16,12 +24,33 @@ function isComplete(grid: Grid): boolean {
   return grid.every((d) => d !== 0);
 }
 
-function nextEmptyCell(grid: Grid, from: number): number | null {
-  for (let i = 1; i <= 81; i++) {
-    const idx = (from + i) % 81;
-    if (grid[idx] === 0) return idx;
+function emptyCells(grid: Grid): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < 81; i++) if (grid[i] === 0) out.push(i);
+  return out;
+}
+
+// Order a cell set for cursor traversal: `row` = reading order (left→right,
+// top→bottom); `col` = column-major (top→bottom, then next column).
+function orderCells(cells: number[], axis: Axis): number[] {
+  if (axis === "col") {
+    return [...cells].sort((a, b) => (a % 9) - (b % 9) || a - b);
   }
-  return null;
+  return [...cells].sort((a, b) => a - b);
+}
+
+// Step to the prev/next member of an ordered set, wrapping at the ends.
+// If `current` isn't in the set, land on the first (dir 1) or last (dir -1).
+function stepInSet(
+  ordered: number[],
+  current: number,
+  dir: Dir,
+): number | null {
+  if (ordered.length === 0) return null;
+  const idx = ordered.indexOf(current);
+  if (idx === -1) return dir === 1 ? ordered[0] : ordered[ordered.length - 1];
+  const n = ordered.length;
+  return ordered[(((idx + dir) % n) + n) % n];
 }
 
 function nextValidCellForDigit(
@@ -122,13 +151,21 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
       };
     }
     case "skipToNextCell": {
+      const dir: Dir = intent.dir ?? 1;
+      // Tab/Shift+Tab walk every empty cell in reading order; arrows walk only
+      // the valid cells for the active digit, directionally (row vs column).
+      let pool: number[];
+      let axis: Axis;
+      if (intent.traversal === "empty") {
+        pool = emptyCells(state.grid);
+        axis = "row";
+      } else {
+        if (state.activeDigit == null) return state;
+        pool = cellsForDigit(state.grid, state.activeDigit);
+        axis = intent.axis ?? "row";
+      }
       const from = state.activeCell ?? -1;
-      const next =
-        intent.traversal === "empty"
-          ? nextEmptyCell(state.grid, from)
-          : state.activeDigit == null
-            ? null
-            : nextValidCellForDigit(state.grid, state.activeDigit, from);
+      const next = stepInSet(orderCells(pool, axis), from, dir);
       return { ...state, activeCell: next };
     }
     case "selectCell": {

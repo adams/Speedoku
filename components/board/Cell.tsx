@@ -34,6 +34,13 @@ export function Cell(props: CellProps) {
           ? "given"
           : "entered";
 
+  // Focus Mode contrast (v1 parity): with a digit selected, dim every cell
+  // that isn't a legal target, the cursor, or an existing copy of that digit —
+  // so the placeable cells pop. A digit is always selected during play.
+  const holdsActive = activeDigit != null && value === activeDigit;
+  const dimmed =
+    activeDigit != null && !legalForActive && !isCursor && !holdsActive;
+
   // Derive background: legal-target tint > given off-white > plain white
   const bgStyle: React.CSSProperties = legalForActive
     ? { background: "var(--color-accent-soft)" }
@@ -52,7 +59,9 @@ export function Cell(props: CellProps) {
   const cls = [
     // layout & base
     "relative flex aspect-square items-center justify-center",
-    "select-none outline-none transition-colors duration-150",
+    "select-none outline-none transition-[opacity,background-color,color] duration-150",
+    // Focus Mode: fade cells the active digit can't use
+    dimmed ? "opacity-35" : "",
     // cursor gets rounded corners and stacks above siblings
     isCursor ? "z-10 rounded-[var(--radius-cell)]" : "",
     // box divider classes injected by Board

@@ -116,6 +116,106 @@ describe("reduce — completion advances and scores", () => {
   });
 });
 
+describe("reduce — directional cursor movement (arrows)", () => {
+  // Empty grid → every cell is a legal target for any digit, so the valid set
+  // is all 81 cells and the traversal order is fully predictable.
+  const EMPTY: Grid = new Array(81).fill(0);
+  const at = (cell: number): RunState => ({
+    ...playingState(EMPTY),
+    activeDigit: 1,
+    activeCell: cell,
+  });
+
+  it("left/right step row-major (reading order) prev/next", () => {
+    expect(
+      reduce(
+        at(10),
+        { type: "skipToNextCell", traversal: "valid", axis: "row", dir: 1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(11);
+    expect(
+      reduce(
+        at(10),
+        { type: "skipToNextCell", traversal: "valid", axis: "row", dir: -1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(9);
+  });
+
+  it("up/down step column-major prev/next", () => {
+    // column-major from r1c1 (10): next down the column is r2c1 (19); prev is r0c1 (1)
+    expect(
+      reduce(
+        at(10),
+        { type: "skipToNextCell", traversal: "valid", axis: "col", dir: 1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(19);
+    expect(
+      reduce(
+        at(10),
+        { type: "skipToNextCell", traversal: "valid", axis: "col", dir: -1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(1);
+  });
+
+  it("wraps around the valid set at the ends", () => {
+    // row-major prev from cell 0 wraps to the last cell (80)
+    expect(
+      reduce(
+        at(0),
+        { type: "skipToNextCell", traversal: "valid", axis: "row", dir: -1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(80);
+  });
+});
+
+describe("reduce — reverse empty-cell traversal (Tab / Shift+Tab)", () => {
+  const SPARSE: Grid = new Array(81).fill(1);
+  for (const i of [5, 20, 60]) SPARSE[i] = 0;
+  const at = (cell: number): RunState => ({
+    ...playingState(SPARSE),
+    activeCell: cell,
+  });
+
+  it("Tab (dir 1) walks empties forward, wrapping", () => {
+    expect(
+      reduce(
+        at(20),
+        { type: "skipToNextCell", traversal: "empty", dir: 1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(60);
+    expect(
+      reduce(
+        at(60),
+        { type: "skipToNextCell", traversal: "empty", dir: 1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(5);
+  });
+
+  it("Shift+Tab (dir -1) walks empties backward, wrapping", () => {
+    expect(
+      reduce(
+        at(20),
+        { type: "skipToNextCell", traversal: "empty", dir: -1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(5);
+    expect(
+      reduce(
+        at(5),
+        { type: "skipToNextCell", traversal: "empty", dir: -1 },
+        mkCtx(0),
+      ).activeCell,
+    ).toBe(60);
+  });
+});
+
 describe("advance — next puzzle opens pre-selected", () => {
   it("a fresh puzzle starts with the lowest non-solved digit + a legal cell", () => {
     // Complete the tutorial to advance into a real (depth-2) puzzle.

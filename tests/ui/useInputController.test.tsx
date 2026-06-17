@@ -5,6 +5,7 @@ import type { BankFile } from "@/lib/engine/banks";
 import fixture from "@/lib/engine/banks/banks.fixture.json";
 import { useInputController } from "@/lib/input/useInputController";
 import { createRunStore } from "@/lib/run/store";
+import type { Intent } from "@/lib/run/types";
 import type { RunStoreApi } from "@/lib/run/useRunStore";
 
 const bank = fixture as BankFile;
@@ -50,5 +51,29 @@ describe("useInputController", () => {
     setup();
     act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "5" })));
     expect(store.getState().state.activeDigit).toBe(5);
+  });
+
+  it("arrows dispatch directional valid-cell moves; Tab/Shift+Tab walk empties", () => {
+    setup();
+    const intents: Intent[] = [];
+    store.setState({ dispatch: (i: Intent) => intents.push(i) });
+    const press = (key: string, shiftKey = false) =>
+      act(() =>
+        window.dispatchEvent(new KeyboardEvent("keydown", { key, shiftKey })),
+      );
+    press("ArrowRight");
+    press("ArrowLeft");
+    press("ArrowDown");
+    press("ArrowUp");
+    press("Tab");
+    press("Tab", true);
+    expect(intents).toEqual([
+      { type: "skipToNextCell", traversal: "valid", axis: "row", dir: 1 },
+      { type: "skipToNextCell", traversal: "valid", axis: "row", dir: -1 },
+      { type: "skipToNextCell", traversal: "valid", axis: "col", dir: 1 },
+      { type: "skipToNextCell", traversal: "valid", axis: "col", dir: -1 },
+      { type: "skipToNextCell", traversal: "empty", dir: 1 },
+      { type: "skipToNextCell", traversal: "empty", dir: -1 },
+    ]);
   });
 });
