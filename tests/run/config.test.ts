@@ -2,23 +2,42 @@ import { describe, expect, it } from "vitest";
 import type { BankFile } from "@/lib/engine/banks";
 import { makeDefaultConfig } from "@/lib/run/config";
 
+// Seeds encode empties by zero-count; ratings drive the technique percentiles.
+const g = (empties: number) => [
+  ...Array(81 - empties).fill(1),
+  ...Array(empties).fill(0),
+];
+// ratings sorted: [10,20,30,40,50,60,70,80,90,100]; empties: [6,7,8,...,15]
 const bank: BankFile = {
   bands: [
-    { lo: 100, hi: 200, seeds: [[]], ratings: [120] },
-    { lo: 200, hi: 300, seeds: [[]], ratings: [250] },
-    { lo: 300, hi: 500, seeds: [[]], ratings: [400] },
+    {
+      lo: 10,
+      hi: 50,
+      seeds: [g(6), g(7), g(8), g(9)],
+      ratings: [10, 20, 30, 40],
+    },
+    { lo: 50, hi: 80, seeds: [g(10), g(11), g(12)], ratings: [50, 60, 70] },
+    { lo: 80, hi: 101, seeds: [g(13), g(14), g(15)], ratings: [80, 90, 100] },
   ],
 };
 
 describe("makeDefaultConfig", () => {
-  it("calibrates floor/top to the bank's rating span", () => {
+  it("anchors the rating floor to the easy end and top to ~p90", () => {
     const c = makeDefaultConfig(bank, { seed: 42, mode: "hints-on" });
-    expect(c.floorRating).toBe(100);
-    expect(c.topRating).toBe(500);
-    expect(c.tutorialRating).toBe(100);
-    expect(c.slope).toBeGreaterThan(0);
+    // percentile(p) uses idx=round(p*(n-1)); n=10 → p05→idx0→10, p90→idx8→90
+    expect(c.floorRating).toBe(10);
+    expect(c.topRating).toBe(90);
+    expect(c.tutorialRating).toBe(c.floorRating); // legacy = depth-1 rating
+    expect(c.slope).toBeCloseTo((90 - 10) / 22, 6);
     expect(c.seed).toBe(42);
     expect(c.mode).toBe("hints-on");
+  });
+
+  it("derives empties endpoints (near-solved floor, minimal top)", () => {
+    const c = makeDefaultConfig(bank, { seed: 1, mode: "hints-on" });
+    // empties sorted [6..15]; p05→idx0→6, p90→idx8→14
+    expect(c.floorEmpties).toBe(6);
+    expect(c.topEmpties).toBe(14);
   });
 
   it("carries sane scoring defaults", () => {
