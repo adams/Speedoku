@@ -41,16 +41,16 @@ export function Cell(props: CellProps) {
   const dimmed =
     activeDigit != null && !legalForActive && !isCursor && !holdsActive;
 
-  // Derive background: legal-target tint > given off-white > plain white
+  // Derive background: legal-target tint (blue = an option) > given off-white > white
   const bgStyle: React.CSSProperties = legalForActive
-    ? { background: "var(--color-accent-soft)" }
+    ? { background: "var(--color-cyan-soft)" }
     : given && value !== 0
       ? { background: "var(--color-cell-given)" }
       : { background: "var(--color-cell)" };
 
-  // Cursor ring + glow via box-shadow
+  // Cursor ring + glow via box-shadow (cyan, matching the legal-option signal)
   const shadowStyle: React.CSSProperties = isCursor
-    ? { boxShadow: "inset 0 0 0 2px var(--color-accent), var(--cursor-glow)" }
+    ? { boxShadow: "inset 0 0 0 2px var(--color-cyan), var(--cursor-glow)" }
     : {};
 
   const combinedStyle: React.CSSProperties = { ...bgStyle, ...shadowStyle };
@@ -117,7 +117,7 @@ export function Cell(props: CellProps) {
                   "flex items-center justify-center",
                   // slightly larger hit for the highlighted mark
                   highlighted
-                    ? "text-[10px] font-extrabold leading-none text-[var(--color-accent)]"
+                    ? "text-[10px] font-extrabold leading-none text-[var(--color-entered)]"
                     : "text-[8px] font-semibold leading-none text-[var(--color-cand)]",
                 ].join(" ")}
               >
