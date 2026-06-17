@@ -30,6 +30,12 @@ export function loadBanks(file: BankFile): BankFile {
 // among — rating variety / anti-memorization without straying off the curve.
 const NEIGHBORHOOD = 6;
 
+// Empties is the primary (felt) difficulty axis; rating is a secondary tiebreak
+// (deep technique climb among same-emptiness puzzles). Down-weighting rating
+// ensures depth-1's near-solved puzzles aren't penalized for their high rating
+// on the U-curve — what matters is that they have few blanks.
+const RATING_WEIGHT = 0.3;
+
 function seedEmpties(seed: number[]): number {
   let n = 0;
   for (const d of seed) if (d === 0) n++;
@@ -59,8 +65,8 @@ export function pickSeed(
   const rSpan = Math.max(...ratings) - Math.min(...ratings) || 1;
   const eSpan = Math.max(...emps) - Math.min(...emps) || 1;
   const dist = (p: { rating: number; empties: number }) =>
-    Math.abs(p.rating - target.rating) / rSpan +
-    Math.abs(p.empties - target.empties) / eSpan;
+    Math.abs(p.empties - target.empties) / eSpan +
+    RATING_WEIGHT * (Math.abs(p.rating - target.rating) / rSpan);
   pool.sort((a, b) => dist(a) - dist(b));
   const k = Math.min(NEIGHBORHOOD, pool.length);
   const chosen = pool[Math.floor(rng() * k)];

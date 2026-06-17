@@ -4,7 +4,7 @@ import type { Mode, RunConfig } from "./types";
 const REACH_DEPTH = 14; // depths for technique rating to climb floor → top
 const FLOOR_PCT = 0.05; // rating floor at the easy end (depth 1 is meant to be easy)
 const TOP_PCT = 0.9; // rating ceiling — hard but reachable, not the worst outlier
-const EMPTIES_FLOOR_PCT = 0.05; // near-solved floor
+const EMPTIES_FLOOR_PCT = 0.0; // near-solved floor — depth 1 targets the actual minimum empties
 const EMPTIES_TOP_PCT = 0.9; // ~minimal top
 
 function percentile(sortedAsc: number[], p: number): number {
