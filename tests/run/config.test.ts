@@ -4,9 +4,9 @@ import { makeDefaultConfig } from "@/lib/run/config";
 
 const bank: BankFile = {
   bands: [
-    { lo: 100, hi: 200, seeds: [[]] },
-    { lo: 200, hi: 300, seeds: [[]] },
-    { lo: 300, hi: 500, seeds: [[]] },
+    { lo: 100, hi: 200, seeds: [[]], ratings: [120] },
+    { lo: 200, hi: 300, seeds: [[]], ratings: [250] },
+    { lo: 300, hi: 500, seeds: [[]], ratings: [400] },
   ],
 };
 

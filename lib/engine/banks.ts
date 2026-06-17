@@ -6,6 +6,7 @@ export interface Band {
   lo: number;
   hi: number;
   seeds: number[][];
+  ratings: number[]; // technique rating of each seed; parallel to seeds[]; lo <= ratings[i] < hi
 }
 export interface BankFile {
   bands: Band[];

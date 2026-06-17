@@ -6,7 +6,9 @@ import { mulberry32 } from "@/lib/engine/rng";
 
 const seedA = carvePuzzle(mulberry32(1)).puzzle;
 const seedB = carvePuzzle(mulberry32(2)).puzzle;
-const file: BankFile = { bands: [{ lo: 0, hi: 50, seeds: [seedA, seedB] }] };
+const file: BankFile = {
+  bands: [{ lo: 0, hi: 50, seeds: [seedA, seedB], ratings: [10, 40] }],
+};
 
 test("pickPuzzle returns a uniquely-solvable transformed puzzle near the target", () => {
   const p = pickPuzzle(file, 10, mulberry32(77));
