@@ -1,5 +1,5 @@
-import { randomTransform } from "@/factory/transform";
 import type { Rng } from "./rng";
+import { randomTransform } from "./transform";
 import type { Grid } from "./types";
 
 export interface Band {
@@ -16,6 +16,8 @@ export function loadBanks(file: BankFile): BankFile {
 }
 
 export function pickPuzzle(file: BankFile, target: number, rng: Rng): Grid {
+  if (file.bands.length === 0)
+    throw new Error("pickPuzzle: bank file has no bands");
   let band = file.bands.find((b) => target >= b.lo && target < b.hi);
   if (!band) {
     band = file.bands.reduce((best, b) => {

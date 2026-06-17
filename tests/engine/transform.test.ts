@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
 import { carvePuzzle } from "@/factory/carvePuzzle";
 import { generateSolved } from "@/factory/generateSolved";
+import { countSolutions } from "@/lib/engine/count";
+import { mulberry32 } from "@/lib/engine/rng";
 import {
   permuteBands,
   permuteColsInStacks,
@@ -9,9 +11,7 @@ import {
   randomTransform,
   relabel,
   transpose,
-} from "@/factory/transform";
-import { countSolutions } from "@/lib/engine/count";
-import { mulberry32 } from "@/lib/engine/rng";
+} from "@/lib/engine/transform";
 
 function isValidSolution(g: number[]): boolean {
   for (let i = 0; i < 9; i++) {

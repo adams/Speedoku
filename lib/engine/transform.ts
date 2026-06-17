@@ -1,5 +1,5 @@
-import { type Rng, shuffle } from "@/lib/engine/rng";
-import type { Grid } from "@/lib/engine/types";
+import { type Rng, shuffle } from "./rng";
+import type { Grid } from "./types";
 
 const at = (g: Grid, r: number, c: number) => g[r * 9 + c];
 

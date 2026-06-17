@@ -24,5 +24,5 @@ test("removing a key clue can break uniqueness", () => {
   // here assert the function detects >1 on a deliberately under-constrained grid
   const sparse = uniqueEasy.slice();
   for (let i = 0; i < 81; i++) if (i % 2 === 0) sparse[i] = 0;
-  expect(countSolutions(sparse, 2)).toBeGreaterThanOrEqual(1);
+  expect(countSolutions(sparse, 2)).toBe(2);
 });
