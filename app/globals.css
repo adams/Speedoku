@@ -61,3 +61,37 @@ body {
     animation-delay: 0.09s;
   }
 }
+
+/* ── Depth-progression: Bloom & Descend ─────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .board-bloom > * { animation: sdk-bloom 280ms ease-in-out both; }
+  /* random-ish per-cell tilt + stagger → organic bloom, not a uniform grid pulse */
+  .board-bloom > *:nth-child(9n+1){--r:-11deg;animation-delay:0ms}
+  .board-bloom > *:nth-child(9n+2){--r:8deg;animation-delay:16ms}
+  .board-bloom > *:nth-child(9n+3){--r:-15deg;animation-delay:6ms}
+  .board-bloom > *:nth-child(9n+4){--r:13deg;animation-delay:24ms}
+  .board-bloom > *:nth-child(9n+5){--r:-6deg;animation-delay:10ms}
+  .board-bloom > *:nth-child(9n+6){--r:10deg;animation-delay:30ms}
+  .board-bloom > *:nth-child(9n+7){--r:-9deg;animation-delay:8ms}
+  .board-bloom > *:nth-child(9n+8){--r:14deg;animation-delay:20ms}
+  .board-bloom > *:nth-child(9n+9){--r:-12deg;animation-delay:14ms}
+  .board-exit { animation: sdk-exit 280ms ease-in forwards; }
+  .board-enter { animation: sdk-enter 300ms ease-out both; }
+  .depth-stamp { animation: sdk-stamp 560ms ease-in-out both; }
+  .board-stage.is-transition { animation: sdk-bgdip 580ms ease-in-out both; }
+}
+@keyframes sdk-bloom {
+  /* Bloom fires fast so it celebrates BEFORE the board has slid far */
+  0%,18% { transform: scale(1) rotate(0); }
+  40%,52% { transform: scale(1.13) rotate(var(--r,0deg)); background: var(--color-cyan); color: #fff; }
+  100% { transform: scale(1) rotate(0); }
+}
+@keyframes sdk-exit { to { transform: translateY(-14%) scale(1.04); opacity: 0; } }
+@keyframes sdk-enter { from { transform: translateY(14%) scale(.84); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+@keyframes sdk-stamp {
+  0%,38% { opacity: 0; transform: scale(.4); }
+  50% { opacity: 1; transform: scale(1.18); }
+  60% { transform: scale(1); }
+  74%,100% { opacity: 0; }
+}
+@keyframes sdk-bgdip { 0%,28%,100% { background: transparent; } 52% { background: rgba(22,192,216,.10); } }

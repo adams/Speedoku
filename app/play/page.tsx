@@ -15,6 +15,7 @@ import { summarize } from "@/lib/run/reduce";
 import { createRunStore } from "@/lib/run/store";
 import { usePersistence } from "@/lib/run/usePersistence";
 import { useRunSelector } from "@/lib/run/useRunStore";
+import { useDepthTransition } from "@/lib/ui/useDepthTransition";
 
 export default function PlayPage() {
   // The seed must be identical on the server and on the first client render, or
@@ -39,7 +40,14 @@ export default function PlayPage() {
   const activeDigit = useRunSelector(store, (s) => s.state.activeDigit);
   const activeCell = useRunSelector(store, (s) => s.state.activeCell);
   const status = useRunSelector(store, (s) => s.state.status);
-  const { onDigit, onSelectCell, onSubmit } = useInputController(store);
+  const t = useDepthTransition(
+    useRunSelector(store, (s) => s.state.depth),
+    grid,
+  );
+  const { onDigit, onSelectCell, onSubmit } = useInputController(
+    store,
+    t.transitioning,
+  );
 
   const adapter = useMemo(() => createLocalAdapter(), []);
   const { bests, recordRun } = usePersistence(adapter, "hints-on");
@@ -106,12 +114,37 @@ export default function PlayPage() {
         >
           <Hud store={store} bests={bests} />
 
-          <Board
-            grid={grid}
-            activeDigit={activeDigit}
-            activeCell={activeCell}
-            onSelectCell={onSelectCell}
-          />
+          <div
+            className={`board-stage relative${t.transitioning ? " is-transition" : ""}`}
+          >
+            <div
+              className={
+                t.phase === "exit"
+                  ? "board-exit"
+                  : t.phase === "enter"
+                    ? "board-enter"
+                    : ""
+              }
+            >
+              <Board
+                grid={t.displayGrid}
+                activeDigit={activeDigit}
+                activeCell={activeCell}
+                onSelectCell={onSelectCell}
+                bloom={t.phase === "exit"}
+              />
+            </div>
+            {t.transitioning && (
+              <div className="depth-stamp pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center">
+                <span className="text-5xl font-extrabold tracking-tight text-[--color-ink]">
+                  {t.stampDepth}
+                </span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[--color-cyan]">
+                  Depth ↓
+                </span>
+              </div>
+            )}
+          </div>
 
           <NumberPad grid={grid} activeDigit={activeDigit} onDigit={onDigit} />
 

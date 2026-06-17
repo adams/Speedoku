@@ -10,6 +10,7 @@ export interface BoardProps {
   activeDigit: number | null;
   activeCell: number | null;
   onSelectCell: (cell: number) => void;
+  bloom?: boolean;
 }
 
 function boxClasses(i: number): string {
@@ -30,13 +31,16 @@ export function Board({
   activeDigit,
   activeCell,
   onSelectCell,
+  bloom = false,
 }: BoardProps) {
   const cands = legalCandidates(grid);
   const counts = new Array(10).fill(0);
   for (const v of grid) if (v) counts[v]++;
 
   return (
-    <div className="grid aspect-square w-full grid-cols-9 overflow-hidden rounded-[var(--radius-card)] border border-line bg-board shadow-[0_12px_40px_-12px_rgba(23,26,43,0.18)]">
+    <div
+      className={`grid aspect-square w-full grid-cols-9 overflow-hidden rounded-[var(--radius-card)] border border-line bg-board shadow-[0_12px_40px_-12px_rgba(23,26,43,0.18)]${bloom ? " board-bloom" : ""}`}
+    >
       {grid.map((value, i) => {
         const empty = value === 0;
         const candidates = empty ? digitsOf(cands[i]) : [];
