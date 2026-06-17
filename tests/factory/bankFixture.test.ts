@@ -30,8 +30,19 @@ describe("banks.fixture.json", () => {
 
   it("stores length-81 unique-solution seeds", () => {
     for (const b of bank.bands) {
-      expect(b.seeds[0]).toHaveLength(81);
-      expect(hasUniqueSolution(b.seeds[0])).toBe(true);
+      // Assert every seed has length 81
+      for (const seed of b.seeds) {
+        expect(seed).toHaveLength(81);
+      }
+      // Assert unique solution for a sample: first, middle, last
+      const sampleIndices = [
+        0,
+        Math.floor(b.seeds.length / 2),
+        b.seeds.length - 1,
+      ];
+      for (const idx of sampleIndices) {
+        expect(hasUniqueSolution(b.seeds[idx])).toBe(true);
+      }
     }
   });
 
