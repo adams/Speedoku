@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  cellPoints,
   difficultyWeight,
   par,
   puzzleCredit,
@@ -55,6 +56,33 @@ describe("puzzleScore", () => {
   });
   it("is never zero or negative", () => {
     expect(puzzleScore(500, 10_000_000, config)).toBeGreaterThan(0);
+  });
+});
+
+describe("cellPoints (per-placement award)", () => {
+  it("is always positive — a placement never banks zero", () => {
+    expect(cellPoints(100, 60_000, 50, config)).toBeGreaterThan(0); // very slow
+    expect(cellPoints(100, 50, 50, config)).toBeGreaterThan(0); // very fast
+  });
+
+  it("pays more for a faster placement", () => {
+    const fast = cellPoints(100, 200, 50, config);
+    const slow = cellPoints(100, 20_000, 50, config);
+    expect(fast).toBeGreaterThan(slow);
+  });
+
+  it("clamps the speed factor between floor and cap", () => {
+    const perCell = (config.base / 50) * difficultyWeight(100, config);
+    expect(cellPoints(100, 1, 50, config)).toBe(
+      Math.round(perCell * config.cap),
+    );
+    expect(cellPoints(100, 10_000_000, 50, config)).toBe(
+      Math.round(perCell * config.floorRatio),
+    );
+  });
+
+  it("returns 0 when there are no empty cells", () => {
+    expect(cellPoints(100, 1000, 0, config)).toBe(0);
   });
 });
 

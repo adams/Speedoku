@@ -5,7 +5,7 @@ import type { BankFile } from "@/lib/engine/banks";
 import fixture from "@/lib/engine/banks/banks.fixture.json";
 import { makeDefaultConfig } from "@/lib/run/config";
 import { initRun, reduce, summarize } from "@/lib/run/reduce";
-import { puzzleScore } from "@/lib/run/scorer";
+import { cellPoints } from "@/lib/run/scorer";
 import type { Ctx, RunConfig, RunState } from "@/lib/run/types";
 
 const bank = fixture as BankFile;
@@ -58,6 +58,7 @@ function playingState(grid: Grid): RunState {
     activeDigit: null,
     activeCell: null,
     puzzleStartMs: 0,
+    lastPlaceMs: 0,
     score: 0,
     fastestSolveMs: null,
     totalMs: 0,
@@ -293,7 +294,7 @@ describe("reduce — death on unsolvable", () => {
     expect(sum.seed).toBe(7);
   });
 
-  it("a killing placement banks partial credit scaled by progress (not 0)", () => {
+  it("the killing placement still banks points for the cell it filled", () => {
     const seed = bank.bands[0].seeds[0] as Grid;
     const startEmpty = seed.filter((d) => d === 0).length;
     const kill = findKillerMove(seed);
@@ -301,18 +302,15 @@ describe("reduce — death on unsolvable", () => {
     // biome-ignore lint/style/noNonNullAssertion: guarded by expect above
     const { cell, digit } = kill!;
 
-    let s = playingState(seed); // puzzleStartMs=0, rating=floorRating, emptyAtStart=startEmpty
+    let s = playingState(seed); // puzzleStartMs=0, lastPlaceMs=0, rating=floorRating
     s = reduce(s, { type: "selectNumber", digit }, mkCtx(0));
-    s = reduce(s, { type: "placeNumber", cell }, mkCtx(5000)); // solveMs = 5000
+    s = reduce(s, { type: "placeNumber", cell }, mkCtx(5000)); // dt = 5000ms
 
     expect(s.status).toBe("runOver");
-    // exactly one cell was filled before death → progress = 1 / startEmpty
-    const progress = 1 / startEmpty;
-    const expected = Math.round(
-      puzzleScore(config.floorRating, 5000, config) * progress,
-    );
+    // The one placed cell banks its per-cell points (dt measured from lastPlaceMs).
+    const expected = cellPoints(config.floorRating, 5000, startEmpty, config);
     expect(s.score).toBe(expected);
-    expect(s.score).toBeGreaterThan(0); // the fix: death is no longer a flat 0
+    expect(s.score).toBeGreaterThan(0); // never a flat 0
   });
 
   it("counts the death-puzzle elapsed toward total time", () => {
@@ -335,6 +333,39 @@ describe("reduce — death on unsolvable", () => {
     expect(reduce(over, { type: "selectNumber", digit: 1 }, mkCtx(0))).toBe(
       over,
     );
+  });
+});
+
+describe("reduce — points bank per placement", () => {
+  it("a placement during play raises the score immediately (before any completion)", () => {
+    const seed = bank.bands[0].seeds[0] as Grid;
+    const sol = solve(seed);
+    if (!sol) throw new Error("expected solvable seed");
+    const cell = seed.indexOf(0);
+    let s = playingState(seed); // score 0
+    s = reduce(s, { type: "selectNumber", digit: sol[cell] }, mkCtx(2000));
+    s = reduce(s, { type: "placeNumber", cell }, mkCtx(2000));
+    expect(s.status).toBe("playing");
+    expect(s.score).toBeGreaterThan(0);
+  });
+
+  it("a faster placement banks more than a slower one", () => {
+    const seed = bank.bands[0].seeds[0] as Grid;
+    const sol = solve(seed);
+    if (!sol) throw new Error("expected solvable seed");
+    const cell = seed.indexOf(0);
+    const digit = sol[cell];
+    const fast = reduce(
+      reduce(playingState(seed), { type: "selectNumber", digit }, mkCtx(500)),
+      { type: "placeNumber", cell },
+      mkCtx(500), // dt = 500ms from lastPlaceMs(0)
+    );
+    const slow = reduce(
+      reduce(playingState(seed), { type: "selectNumber", digit }, mkCtx(20000)),
+      { type: "placeNumber", cell },
+      mkCtx(20000), // dt = 20s
+    );
+    expect(fast.score).toBeGreaterThan(slow.score);
   });
 });
 
