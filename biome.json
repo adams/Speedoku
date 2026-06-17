@@ -9,7 +9,7 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
-      "!lib/engine/banks",
+      "!lib/engine/banks/**",
       "!.next",
       "!node_modules",
       "!public",
