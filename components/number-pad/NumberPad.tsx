@@ -13,7 +13,12 @@ export function NumberPad({ grid, activeDigit, onDigit }: NumberPadProps) {
   for (const v of grid) if (v) counts[v]++;
 
   return (
-    <div className="grid grid-cols-3 gap-3 p-1">
+    <div
+      className="grid grid-cols-3 gap-2"
+      // Match the board's width cap so the pad aligns under it instead of
+      // ballooning to fill the column.
+      style={{ width: "min(92vmin, 540px)" }}
+    >
       {Array.from({ length: 9 }, (_, k) => {
         const d = k + 1;
         const remaining = 9 - counts[d];
@@ -30,12 +35,14 @@ export function NumberPad({ grid, activeDigit, onDigit }: NumberPadProps) {
             disabled={done}
             onClick={() => onDigit(d)}
             className={[
-              "relative flex aspect-square items-center justify-center",
+              // Short, wide tiles: a 3×3 pad of squares would be as tall as the
+              // 9×9 board. Cap the height so the pad stays a compact strip.
+              "relative flex h-[clamp(44px,11vw,60px)] items-center justify-center",
               "rounded-[var(--radius-card)]",
               "select-none outline-none",
               "transition-all duration-200 ease-out",
-              // font sizing: scales with button width
-              "text-[clamp(22px,6vw,36px)] font-extrabold leading-none tabular-nums",
+              // font sizing: scales with viewport, capped for the shorter tile
+              "text-[clamp(20px,5vw,30px)] font-extrabold leading-none tabular-nums",
               active
                 ? "text-white"
                 : done
