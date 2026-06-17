@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  cellDepthPoints,
   cellPoints,
   difficultyWeight,
   par,
@@ -109,5 +110,27 @@ describe("puzzleMax / puzzleFloor (meter endpoints)", () => {
     expect(puzzleMax(300, config)).toBeGreaterThan(puzzleMax(100, config));
     expect(puzzleFloor(300, config)).toBeGreaterThan(puzzleFloor(100, config));
     expect(puzzleMax(300, config)).toBeGreaterThan(puzzleFloor(300, config));
+  });
+});
+
+describe("cellDepthPoints", () => {
+  it("is the per-cell base share, difficulty-weighted (par-pace baseline)", () => {
+    // base/emptyAtStart * difficultyWeight(rating); for these config numbers,
+    // difficultyWeight = 1 + weightSlope*norm(rating). Use the test config.
+    const v = cellDepthPoints(config.floorRating, 40, config);
+    expect(v).toBe(Math.round((config.base / 40) * 1)); // floor rating → norm 0 → weight 1
+  });
+
+  it("equals cellPoints when the cell lands at exactly par pace (speed = 1)", () => {
+    const rating = config.topRating;
+    const emptyAtStart = 30;
+    const parCellMs = (par(rating, config) / emptyAtStart) * 1000; // dt that yields speed = 1
+    expect(cellPoints(rating, parCellMs, emptyAtStart, config)).toBe(
+      cellDepthPoints(rating, emptyAtStart, config),
+    );
+  });
+
+  it("returns 0 when emptyAtStart is 0", () => {
+    expect(cellDepthPoints(config.topRating, 0, config)).toBe(0);
   });
 });

@@ -41,6 +41,19 @@ export function puzzleScore(
   );
 }
 
+// The par-pace per-cell baseline (speed factor = 1) — the "depth share" of a
+// placement. Speed share is derived by the reducer as cellPoints − this.
+export function cellDepthPoints(
+  rating: number,
+  emptyAtStart: number,
+  config: RunConfig,
+): number {
+  if (emptyAtStart <= 0) return 0;
+  return Math.round(
+    (config.base / emptyAtStart) * difficultyWeight(rating, config),
+  );
+}
+
 // Points for placing a single cell, banked immediately and never taken back.
 // It's the puzzle's per-cell share (base / emptyAtStart, difficulty-weighted)
 // scaled by how fast THIS placement landed — fast cells pay more, slow cells
