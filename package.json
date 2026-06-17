@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "build:banks": "tsx factory/buildBanks.ts"
+    "build:banks": "tsx factory/buildBanks.ts",
+    "run": "tsx scripts/run.ts"
   },
   "dependencies": {
     "next": "16.2.9",
