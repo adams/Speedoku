@@ -8,6 +8,7 @@ import type { Ctx, Intent, Mode, RunConfig, RunState } from "./types";
 
 export interface RunStore {
   state: RunState;
+  config: RunConfig;
   dispatch(intent: Intent): void;
 }
 
@@ -24,6 +25,7 @@ export function createRunStore(
 
   return createStore<RunStore>((set, get) => ({
     state: initRun(config),
+    config,
     dispatch(intent: Intent) {
       const ctx: Ctx = { nowMs: clock(), bank, rng, config };
       set({ state: reduce(get().state, intent, ctx) });

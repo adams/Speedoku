@@ -1,8 +1,10 @@
 "use client";
 
+import { PuzzleMeter } from "@/components/hud/PuzzleMeter";
 import type { Bests } from "@/lib/data/types";
 import { EMPTY_BESTS } from "@/lib/data/types";
 import { useElapsed } from "@/lib/run/useElapsed";
+import { usePuzzleElapsed } from "@/lib/run/usePuzzleElapsed";
 import type { RunStoreApi } from "@/lib/run/useRunStore";
 import { useRunSelector } from "@/lib/run/useRunStore";
 import { mmss } from "@/lib/ui/format";
@@ -19,6 +21,9 @@ export function Hud({
   const status = useRunSelector(store, (s) => s.state.status);
   const mode = useRunSelector(store, (s) => s.state.mode);
   const elapsed = useElapsed(store);
+  const rating = useRunSelector(store, (s) => s.state.rating);
+  const config = useRunSelector(store, (s) => s.config);
+  const puzzleMs = usePuzzleElapsed(store);
 
   return (
     <div className="relative flex items-stretch justify-between gap-4 rounded-[--radius-card] bg-[--color-cell] px-5 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
@@ -39,6 +44,14 @@ export function Hud({
 
       {/* Score */}
       <StatBlock label="Score" value={score.toLocaleString()} align="right" />
+
+      {/* Live puzzle meter — points draining in real time */}
+      <PuzzleMeter
+        rating={rating}
+        elapsedMs={puzzleMs}
+        config={config}
+        visible={status === "playing"}
+      />
 
       {/* Best — the live "beat this" pace target */}
       {bests.bestScore > 0 && (
