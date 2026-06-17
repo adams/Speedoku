@@ -78,11 +78,13 @@ export default function PlayPage() {
         </span>
       </header>
 
-      {/* ── Main layout: single column on mobile, sidebar on desktop ── */}
-      <main className="relative flex flex-1 flex-col lg:flex-row lg:items-start lg:gap-6 lg:p-6 lg:max-w-[1100px] lg:mx-auto lg:w-full">
-        {/* ── Board column ─────────────────────────────────────────── */}
-        <div className="flex flex-col gap-3 px-3 pb-3 pt-1 lg:px-0 lg:pt-0 lg:flex-1 lg:min-w-0">
-          {/* Single HUD — visible on both breakpoints; sidebar picks it up via order */}
+      {/* ── Main layout: one centered game stack + a balanced sidebar ── */}
+      <main className="relative flex flex-1 flex-col items-center gap-5 px-4 pt-3 pb-8 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:px-8 lg:py-10">
+        {/* ── Game stack: HUD + board + pad all share one width ──────── */}
+        <div
+          className="rise flex flex-col gap-3"
+          style={{ width: "min(540px, 90vmin, 54vh)" }}
+        >
           <Hud store={store} bests={bests} />
 
           <Board
@@ -94,20 +96,16 @@ export default function PlayPage() {
 
           <NumberPad grid={grid} activeDigit={activeDigit} onDigit={onDigit} />
 
-          <p className="text-center text-[13px] font-semibold text-muted pb-2 lg:hidden">
-            Tap a number to aim · tap it again to place
-          </p>
-          <p className="hidden lg:block text-center text-[13px] font-semibold text-muted pb-2">
-            Click a number to aim · click it again (or Enter) to place · arrows
-            move within candidates · Tab jumps cells
+          <p className="text-center text-[12.5px] font-semibold text-[--color-muted] lg:hidden">
+            Tap a number to aim · tap again to place · arrows move · Tab jumps
           </p>
         </div>
 
         {/* ── Desktop sidebar ──────────────────────────────────────── */}
-        <aside className="hidden lg:flex lg:flex-col lg:gap-4 lg:w-[240px] lg:shrink-0 lg:sticky lg:top-6">
-          {/* Wordmark */}
-          <div className="mb-1">
-            <span className="text-2xl font-extrabold tracking-[-0.02em] select-none leading-none">
+        <aside className="rise-late hidden w-[212px] shrink-0 lg:flex lg:flex-col lg:gap-5">
+          {/* Wordmark + mode badge */}
+          <div className="flex items-center justify-between">
+            <span className="select-none text-[27px] font-extrabold leading-none tracking-[-0.02em]">
               <span
                 style={{
                   background:
@@ -121,31 +119,42 @@ export default function PlayPage() {
               </span>
               <span style={{ color: "var(--color-ink)" }}>oku</span>
             </span>
+            <span className="rounded-full bg-[--color-accent] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
+              hints
+            </span>
           </div>
 
           {/* Controls guide */}
           <div
-            className="rounded-[--radius-card] bg-[--color-cell] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+            className="relative overflow-hidden rounded-[--radius-card] bg-[--color-cell] p-4 shadow-[0_8px_30px_-12px_rgba(23,26,43,0.18)]"
             style={{ border: "1px solid var(--color-line)" }}
           >
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-[--color-muted]">
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-[3px]"
+              style={{
+                background:
+                  "linear-gradient(90deg,var(--color-accent),var(--color-cyan))",
+              }}
+            />
+            <p className="mb-3 mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[--color-muted]">
               Controls
             </p>
-            <dl className="flex flex-col gap-2">
+            <dl className="flex flex-col gap-2.5">
               {[
                 ["Select / place", "1–9"],
-                ["Move in candidates", "← ↑ → ↓"],
-                ["Next empty cell", "Tab"],
+                ["Move · valid cells", "← ↑ → ↓"],
+                ["Skip empty cell", "Tab ⇧Tab"],
                 ["Place at cursor", "Enter"],
               ].map(([label, keys]) => (
                 <div
                   key={label}
                   className="flex items-center justify-between gap-2"
                 >
-                  <dt className="text-[12px] text-[--color-muted] leading-none">
+                  <dt className="text-[12px] leading-none text-[--color-muted]">
                     {label}
                   </dt>
-                  <dd className="shrink-0 rounded-md bg-[--color-cell-given] px-2 py-0.5 text-[11px] font-bold tabular-nums text-[--color-ink] leading-none">
+                  <dd className="shrink-0 rounded-md border border-[--color-line] bg-[--color-cell-given] px-2 py-1 text-[11px] font-bold leading-none tabular-nums text-[--color-ink]">
                     {keys}
                   </dd>
                 </div>

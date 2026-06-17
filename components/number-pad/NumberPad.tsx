@@ -13,12 +13,8 @@ export function NumberPad({ grid, activeDigit, onDigit }: NumberPadProps) {
   for (const v of grid) if (v) counts[v]++;
 
   return (
-    <div
-      className="grid grid-cols-3 gap-2"
-      // Match the board's width cap so the pad aligns under it instead of
-      // ballooning to fill the column.
-      style={{ width: "min(92vmin, 540px)" }}
-    >
+    <div className="grid w-full grid-cols-3 gap-2">
+      {/* width owned by the page's game-stack wrapper */}
       {Array.from({ length: 9 }, (_, k) => {
         const d = k + 1;
         const remaining = 9 - counts[d];

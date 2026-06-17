@@ -36,10 +36,7 @@ export function Board({
   for (const v of grid) if (v) counts[v]++;
 
   return (
-    <div
-      className="grid aspect-square grid-cols-9 overflow-hidden rounded-[var(--radius-card)] border border-line bg-board shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
-      style={{ width: "min(92vmin, 540px)" }}
-    >
+    <div className="grid aspect-square w-full grid-cols-9 overflow-hidden rounded-[var(--radius-card)] border border-line bg-board shadow-[0_12px_40px_-12px_rgba(23,26,43,0.18)]">
       {grid.map((value, i) => {
         const empty = value === 0;
         const candidates = empty ? digitsOf(cands[i]) : [];
