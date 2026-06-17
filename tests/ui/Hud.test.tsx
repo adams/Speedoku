@@ -20,4 +20,15 @@ describe("Hud", () => {
     expect(screen.getByText(/score/i)).toBeInTheDocument();
     expect(screen.getByText(/hints/i)).toBeInTheDocument();
   });
+
+  it("hides the timer during the tutorial", () => {
+    const store = createRunStore(bank, {
+      seed: 1,
+      mode: "hints-on",
+      clock: () => 0,
+    });
+    render(<Hud store={store} />);
+    // status is 'tutorial' on a fresh run → no Time label
+    expect(screen.queryByText(/^time$/i)).toBeNull();
+  });
 });
