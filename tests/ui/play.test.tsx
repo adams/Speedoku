@@ -4,6 +4,29 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import PlayPage from "@/app/play/page";
 
+// Polyfill localStorage for jsdom if needed
+if (!window.localStorage || typeof window.localStorage.clear !== "function") {
+  const store: Record<string, string> = {};
+  window.localStorage = {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      Object.keys(store).forEach((key) => {
+        delete store[key];
+      });
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+  } as Storage;
+}
+
 describe("/play", () => {
   it("shows Start, then the board + pad after starting", async () => {
     render(<PlayPage />);
@@ -29,6 +52,7 @@ describe("/play", () => {
   });
 
   it("still starts and accepts a placement with persistence wired", async () => {
+    window.localStorage.clear();
     render(<PlayPage />);
     await userEvent.click(screen.getByRole("button", { name: /start run/i }));
     // board + pad present (persistence wiring didn't break the loop)
