@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { cellsForDigit } from "@/lib/engine";
 import type { BankFile } from "@/lib/engine/banks";
 import fixture from "@/lib/engine/banks/banks.fixture.json";
@@ -107,5 +107,28 @@ describe("useInputController", () => {
       { type: "skipToNextCell", traversal: "empty", dir: 1 },
       { type: "skipToNextCell", traversal: "empty", dir: -1 },
     ]);
+  });
+
+  it("dispatches nothing while locked", () => {
+    const dispatch = vi.fn();
+    const lockedStore = createRunStore(bank, {
+      seed: 1,
+      mode: "hints-on",
+      clock: () => 0,
+    });
+    lockedStore.setState({ dispatch });
+    let lockedHandlers: ReturnType<typeof useInputController>;
+    function LockedHarness({ s }: { s: RunStoreApi }) {
+      lockedHandlers = useInputController(s, true);
+      return null;
+    }
+    render(<LockedHarness s={lockedStore} />);
+    act(() => lockedHandlers.onDigit(3));
+    act(() => lockedHandlers.onSubmit());
+    act(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "5" })));
+    act(() =>
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" })),
+    );
+    expect(dispatch).not.toHaveBeenCalled();
   });
 });
