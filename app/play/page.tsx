@@ -17,8 +17,19 @@ import { usePersistence } from "@/lib/run/usePersistence";
 import { useRunSelector } from "@/lib/run/useRunStore";
 
 export default function PlayPage() {
-  const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1e9));
+  // The seed must be identical on the server and on the first client render, or
+  // hydration mismatches (the SSR puzzle differs from the client puzzle). So we
+  // start from a fixed seed and pick the real random one after mount — the swap
+  // happens behind the PreGame overlay, before the player hits Start, so there's
+  // no visible flash. (Using `useState(() => Math.random())` runs on both the
+  // server and the client and diverges → the data-state hydration error.)
+  const [seed, setSeed] = useState(0);
   const [phase, setPhase] = useState<"pre" | "run">("pre");
+
+  useEffect(() => {
+    setSeed(Math.floor(Math.random() * 1e9));
+  }, []);
+
   const store = useMemo(
     () => createRunStore(bank as BankFile, { seed, mode: "hints-on" }),
     [seed],
