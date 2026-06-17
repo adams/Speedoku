@@ -1,5 +1,6 @@
 "use client";
 
+import { Pill } from "@/components/ui/Pill";
 import type { Bests } from "@/lib/data/types";
 import { EMPTY_BESTS } from "@/lib/data/types";
 import { useElapsed } from "@/lib/run/useElapsed";
@@ -56,9 +57,7 @@ export function Hud({
 
       {/* Hints badge — only in hints-on mode */}
       {mode === "hints-on" && (
-        <span className="absolute -top-2.5 right-4 rounded-full bg-accent px-3 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
-          hints
-        </span>
+        <Pill className="absolute -top-2.5 right-4">hints</Pill>
       )}
     </div>
   );

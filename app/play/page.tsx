@@ -6,6 +6,7 @@ import { PreGame } from "@/components/chrome/PreGame";
 import { RunOver } from "@/components/chrome/RunOver";
 import { Hud } from "@/components/hud/Hud";
 import { NumberPad } from "@/components/number-pad/NumberPad";
+import { Pill } from "@/components/ui/Pill";
 import { createLocalAdapter } from "@/lib/data/localAdapter";
 import type { NewBest } from "@/lib/data/types";
 import type { BankFile } from "@/lib/engine/banks";
@@ -100,9 +101,7 @@ export default function PlayPage() {
           </span>
           <span style={{ color: "var(--color-ink)" }}>oku</span>
         </span>
-        <span className="rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
-          hints
-        </span>
+        <Pill>hints</Pill>
       </header>
 
       {/* ── Main layout: one centered game stack + a balanced sidebar ── */}
@@ -189,9 +188,7 @@ export default function PlayPage() {
               </span>
               <span style={{ color: "var(--color-ink)" }}>oku</span>
             </span>
-            <span className="rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
-              hints
-            </span>
+            <Pill>hints</Pill>
           </div>
 
           {/* Controls guide */}
