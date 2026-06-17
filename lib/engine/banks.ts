@@ -58,8 +58,10 @@ export function pickSeed(
     }
   }
   if (pool.length === 0) throw new Error("pickSeed: bank file has no seeds");
-  // Normalize each axis by its spread so rating (0..1000) and empties (~6..60)
-  // weigh comparably; distance = normalized rating gap + normalized empties gap.
+  // Normalize each axis by its spread so units are comparable; distance is
+  // empties-primary (unweighted) + RATING_WEIGHT * normalized rating gap.
+  // Empties drives the felt curve; rating is a low-weight secondary tiebreak
+  // so deep picks (saturated empties) trend toward harder-rated puzzles.
   const ratings = pool.map((p) => p.rating);
   const emps = pool.map((p) => p.empties);
   const rSpan = Math.max(...ratings) - Math.min(...ratings) || 1;

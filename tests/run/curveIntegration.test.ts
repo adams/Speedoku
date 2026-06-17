@@ -16,7 +16,9 @@ describe("difficulty curve → realized difficulty (empties-driven symptom guard
     // depth-1 puzzles have near-solved blank counts even though their technique
     // ratings are high on the U-curve. Rating is now secondary.
     const pick = pickSeed(bank, curveTarget(1, config), mulberry32(1));
-    const nearSolvedCeiling = (config.floorEmpties ?? 6) + 3;
+    const { floorEmpties } = config;
+    expect(floorEmpties).toBeDefined();
+    const nearSolvedCeiling = (floorEmpties as number) + 3;
     expect(seedEmpties(pick.seed)).toBeLessThanOrEqual(nearSolvedCeiling);
   });
 
@@ -45,9 +47,21 @@ describe("difficulty curve → realized difficulty (empties-driven symptom guard
     // Once empties saturate (both depth-7 and depth-14 target ~51 blanks),
     // the RATING_WEIGHT secondary term should steer deeper picks toward
     // harder-rated minimal puzzles — so deep play still escalates technique.
-    const p7 = pickSeed(bank, curveTarget(7, config), mulberry32(7 * 13));
-    const p14 = pickSeed(bank, curveTarget(14, config), mulberry32(14 * 13));
-    expect(p14.rating).toBeGreaterThan(p7.rating);
+    // Single picks are stochastic draws from NEIGHBORHOOD=6; use median-of-N
+    // to give the assertion real discriminating power (would fail if RATING_WEIGHT=0).
+    const realizedRatings = (depth: number, n: number) => {
+      const xs = Array.from(
+        { length: n },
+        (_, i) =>
+          pickSeed(
+            bank,
+            curveTarget(depth, config),
+            mulberry32(depth * 1000 + i),
+          ).rating,
+      ).sort((a, b) => a - b);
+      return xs[Math.floor(xs.length / 2)]; // median
+    };
+    expect(realizedRatings(14, 16)).toBeGreaterThan(realizedRatings(7, 16));
   });
 
   it("un-squashes the scoring difficulty-weight across depth (coupled live-scoring fix)", () => {
