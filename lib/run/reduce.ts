@@ -118,6 +118,7 @@ function advance(state: RunState, ctx: Ctx): RunState {
     score,
     fastestSolveMs,
     totalMs,
+    emptyAtStart: emptyCells(grid).length,
   };
 }
 
@@ -135,6 +136,7 @@ export function initRun(config: RunConfig): RunState {
     score: 0,
     fastestSolveMs: null,
     totalMs: 0,
+    emptyAtStart: emptyCells(grid).length,
   };
 }
 
@@ -183,7 +185,22 @@ export function reduce(state: RunState, intent: Intent, ctx: Ctx): RunState {
       const grid = place(state.grid, intent.cell, d);
 
       if (state.status === "playing" && !isSolvable(grid)) {
-        return { ...state, grid, status: "runOver" };
+        const solveMs =
+          state.puzzleStartMs == null ? 0 : ctx.nowMs - state.puzzleStartMs;
+        const emptyNow = emptyCells(grid).length;
+        const progress =
+          state.emptyAtStart > 0
+            ? (state.emptyAtStart - emptyNow) / state.emptyAtStart
+            : 0;
+        const credit = Math.round(
+          puzzleScore(state.rating, solveMs, ctx.config) * progress,
+        );
+        return {
+          ...state,
+          grid,
+          status: "runOver",
+          score: state.score + credit,
+        };
       }
       if (isComplete(grid)) {
         return advance(state, ctx);

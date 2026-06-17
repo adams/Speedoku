@@ -5,6 +5,7 @@ import type { BankFile } from "@/lib/engine/banks";
 import fixture from "@/lib/engine/banks/banks.fixture.json";
 import { makeDefaultConfig } from "@/lib/run/config";
 import { initRun, reduce, summarize } from "@/lib/run/reduce";
+import { puzzleScore } from "@/lib/run/scorer";
 import type { Ctx, RunConfig, RunState } from "@/lib/run/types";
 
 const bank = fixture as BankFile;
@@ -41,6 +42,7 @@ function playingState(grid: Grid): RunState {
     score: 0,
     fastestSolveMs: null,
     totalMs: 0,
+    emptyAtStart: grid.filter((d) => d === 0).length,
   };
 }
 
@@ -260,6 +262,28 @@ describe("reduce — death on unsolvable", () => {
     const sum = summarize(s);
     expect(sum.depth).toBe(2);
     expect(sum.seed).toBe(7);
+  });
+
+  it("a killing placement banks partial credit scaled by progress (not 0)", () => {
+    const seed = bank.bands[0].seeds[0] as Grid;
+    const startEmpty = seed.filter((d) => d === 0).length;
+    const kill = findKillerMove(seed);
+    expect(kill).not.toBeNull();
+    // biome-ignore lint/style/noNonNullAssertion: guarded by expect above
+    const { cell, digit } = kill!;
+
+    let s = playingState(seed); // puzzleStartMs=0, rating=floorRating, emptyAtStart=startEmpty
+    s = reduce(s, { type: "selectNumber", digit }, mkCtx(0));
+    s = reduce(s, { type: "placeNumber", cell }, mkCtx(5000)); // solveMs = 5000
+
+    expect(s.status).toBe("runOver");
+    // exactly one cell was filled before death → progress = 1 / startEmpty
+    const progress = 1 / startEmpty;
+    const expected = Math.round(
+      puzzleScore(config.floorRating, 5000, config) * progress,
+    );
+    expect(s.score).toBe(expected);
+    expect(s.score).toBeGreaterThan(0); // the fix: death is no longer a flat 0
   });
 
   it("runOver is terminal", () => {

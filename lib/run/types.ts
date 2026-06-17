@@ -40,6 +40,7 @@ export interface RunState {
   score: number;
   fastestSolveMs: number | null;
   totalMs: number;
+  emptyAtStart: number; // empties when the current puzzle began (for death credit)
 }
 
 // Run-stable deps + the per-dispatch clock. Create `rng` ONCE per run and
