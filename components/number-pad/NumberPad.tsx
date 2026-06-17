@@ -47,9 +47,9 @@ export function NumberPad({ grid, activeDigit, onDigit }: NumberPadProps) {
             style={
               active
                 ? {
-                    // coral → deeper rose: matches mockup warm gradient
+                    // coral → cyan: locked visual direction
                     background:
-                      "linear-gradient(145deg, var(--color-accent) 0%, var(--color-accent-2) 100%)",
+                      "linear-gradient(145deg, var(--color-accent) 0%, var(--color-cyan) 100%)",
                     boxShadow:
                       "var(--glow-accent), 0 4px 16px rgba(255,61,119,0.25)",
                   }
