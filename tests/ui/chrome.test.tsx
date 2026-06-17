@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { PreGame } from "@/components/chrome/PreGame";
@@ -106,8 +106,10 @@ it("shows the depth/speed split and a per-level ledger that totals the score", (
   // headline split: depth = 2500/5000 = 50%, speed = 2500/5000 = 50%
   expect(screen.getByText(/50% depth/i)).toBeInTheDocument();
   expect(screen.getByText(/50% speed/i)).toBeInTheDocument();
-  // running total lands on the final score (appears in Running column; score row also shows it)
-  expect(screen.getAllByText("5,000").length).toBeGreaterThanOrEqual(1);
+  // running total lands on the final score in the ledger's last row
+  const rows = screen.getAllByRole("row");
+  const lastRow = rows[rows.length - 1];
+  expect(within(lastRow).getByText("5,000")).toBeInTheDocument();
 });
 
 it("renders without a ledger when levels is empty (back-compat)", () => {
