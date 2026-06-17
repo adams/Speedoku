@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { difficultyWeight, par, puzzleScore } from "@/lib/run/scorer";
+import {
+  difficultyWeight,
+  par,
+  puzzleFloor,
+  puzzleMax,
+  puzzleScore,
+} from "@/lib/run/scorer";
 import type { RunConfig } from "@/lib/run/types";
 
 const config: RunConfig = {
@@ -48,5 +54,22 @@ describe("puzzleScore", () => {
   });
   it("is never zero or negative", () => {
     expect(puzzleScore(500, 10_000_000, config)).toBeGreaterThan(0);
+  });
+});
+
+describe("puzzleMax / puzzleFloor (meter endpoints)", () => {
+  it("bound the live score: instant solve hits max, very slow hits floor", () => {
+    expect(puzzleScore(100, 1, config)).toBe(
+      Math.round(puzzleMax(100, config)),
+    );
+    expect(puzzleScore(100, 10_000_000, config)).toBe(
+      Math.round(puzzleFloor(100, config)),
+    );
+  });
+
+  it("both rise with rating, and max exceeds floor", () => {
+    expect(puzzleMax(300, config)).toBeGreaterThan(puzzleMax(100, config));
+    expect(puzzleFloor(300, config)).toBeGreaterThan(puzzleFloor(100, config));
+    expect(puzzleMax(300, config)).toBeGreaterThan(puzzleFloor(300, config));
   });
 });
