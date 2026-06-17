@@ -22,13 +22,13 @@ const bank: BankFile = {
 };
 
 describe("makeDefaultConfig", () => {
-  it("anchors the rating floor to the easy end and top to ~p90", () => {
+  it("anchors the rating floor to ~p45 and top to ~p90", () => {
     const c = makeDefaultConfig(bank, { seed: 42, mode: "hints-on" });
-    // percentile(p) uses idx=round(p*(n-1)); n=10 → p05→idx0→10, p90→idx8→90
-    expect(c.floorRating).toBe(10);
+    // percentile(p) uses idx=round(p*(n-1)); n=10 → p45→idx=round(0.45*9)=4→50, p90→idx8→90
+    expect(c.floorRating).toBe(50);
     expect(c.topRating).toBe(90);
     expect(c.tutorialRating).toBe(c.floorRating); // legacy = depth-1 rating
-    expect(c.slope).toBeCloseTo((90 - 10) / 14, 6);
+    expect(c.slope).toBeCloseTo((90 - 50) / 8, 6);
     expect(c.seed).toBe(42);
     expect(c.mode).toBe("hints-on");
   });

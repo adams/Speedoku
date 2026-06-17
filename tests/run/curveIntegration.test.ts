@@ -11,15 +11,25 @@ const config = makeDefaultConfig(bank, { seed: 7, mode: "hints-on" });
 const seedEmpties = (s: number[]) => s.filter((d) => d === 0).length;
 
 describe("difficulty curve → realized difficulty (empties-driven symptom guard)", () => {
-  it("depth 1 is near-solved (≤ floorEmpties+3 blanks) — the Enter-mashable floor", () => {
-    // This is the primary goal of the empties-driven rework:
-    // depth-1 puzzles have near-solved blank counts even though their technique
-    // ratings are high on the U-curve. Rating is now secondary.
+  it("depth 1 is a genuine medium puzzle (rating-led, NOT near-solved)", () => {
+    // Rating now LEADS selection. Depth-1 targets floorRating (~p45 ≈ 151 on real
+    // fixture) — a clear step up from the old near-solved floor (~105). The empties
+    // target at depth 1 is the empties floor (6), but because rating is weighted 1.5×,
+    // the picker lands on medium-rated puzzles (~14 blanks) rather than the trivial
+    // 6-blank near-solved boards whose ratings sit on the high arm of the U-curve.
     const pick = pickSeed(bank, curveTarget(1, config), mulberry32(1));
-    const { floorEmpties } = config;
-    expect(floorEmpties).toBeDefined();
-    const nearSolvedCeiling = (floorEmpties as number) + 3;
-    expect(seedEmpties(pick.seed)).toBeLessThanOrEqual(nearSolvedCeiling);
+    const realizedE = seedEmpties(pick.seed);
+    const realizedR = pick.rating;
+    // Not near-solved: must be well above the empties floor.
+    expect(
+      realizedE,
+      `depth 1 should not be near-solved; got ${realizedE} blanks`,
+    ).toBeGreaterThan((config.floorEmpties as number) + 3);
+    // Rating is in the floor neighborhood: within 30 of floorRating.
+    expect(
+      Math.abs(realizedR - config.floorRating),
+      `depth 1 realized rating ${realizedR.toFixed(1)} should be near floorRating ${config.floorRating.toFixed(1)}`,
+    ).toBeLessThanOrEqual(30);
   });
 
   it("empties ramp up with depth toward minimal, then saturate", () => {
@@ -29,10 +39,15 @@ describe("difficulty curve → realized difficulty (empties-driven symptom guard
     expect(e(12)).toBeGreaterThanOrEqual(45); // near minimal by mid-run
   });
 
-  it("realized empties track the curve target within a tight window (empties is primary axis)", () => {
-    // With empties as primary axis and RATING_WEIGHT=0.3 down-weighting rating,
-    // realized empties should land very close to the empties target across all depths.
-    for (let depth = 1; depth <= 14; depth++) {
+  it("realized empties track the curve target within a tight window (depth 2+)", () => {
+    // Rating now LEADS selection (RATING_WEIGHT=1.5). At depth 1, the empties
+    // target (6, the floor) conflicts with the rating target (~p45 ≈ 151) — there
+    // are no 6-blank puzzles with that rating, so the picker lands on medium-rated
+    // puzzles with more blanks (~14). This empties drift at depth 1 is intentional:
+    // the rating term correctly avoids trivial near-solved boards.
+    // From depth 2 onward the empties and rating targets are consistent with the
+    // fixture distribution, so realized empties should stay close to the target.
+    for (let depth = 2; depth <= 14; depth++) {
       const t = curveTarget(depth, config);
       const realized = pickSeed(bank, t, mulberry32(depth * 13));
       const realizedE = seedEmpties(realized.seed);

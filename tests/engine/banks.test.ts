@@ -53,10 +53,13 @@ test("pickSeed neighborhood exclusion: never picks the 2 farthest seeds from a p
   const target = { rating: 10, empties: 12 };
 
   // Replicate the normalized-distance formula from pickSeed to find the 2 farthest.
+  // Must match production: empties unit-weight + RATING_WEIGHT * normalized rating gap.
+  const RATING_WEIGHT = 1.5;
   const rSpan = Math.max(...ratings8) - Math.min(...ratings8); // 700
   const eSpan = Math.max(...empties8) - Math.min(...empties8); // 35
   const dist = (r: number, e: number) =>
-    Math.abs(r - target.rating) / rSpan + Math.abs(e - target.empties) / eSpan;
+    Math.abs(e - target.empties) / eSpan +
+    RATING_WEIGHT * (Math.abs(r - target.rating) / rSpan);
 
   const poolWithDist = ratings8.map((r, i) => ({
     rating: r,
