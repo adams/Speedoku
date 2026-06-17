@@ -5,6 +5,10 @@ test("start a run and place a number", async ({ page }) => {
   page.on("console", (m) => {
     if (m.type() === "error") errors.push(m.text());
   });
+  // Uncaught runtime errors (e.g. React hydration mismatches) surface here, not
+  // as console.error — guard them so a hydration regression fails the smoke.
+  const pageErrors: string[] = [];
+  page.on("pageerror", (e) => pageErrors.push(e.message));
 
   await page.goto("/play");
   await page.getByRole("button", { name: /start run/i }).click();
@@ -18,4 +22,5 @@ test("start a run and place a number", async ({ page }) => {
 
   await expect(page.getByText(/depth/i)).toBeVisible();
   expect(errors).toEqual([]);
+  expect(pageErrors).toEqual([]);
 });
