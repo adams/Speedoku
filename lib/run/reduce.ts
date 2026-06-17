@@ -50,6 +50,19 @@ function nextIncompleteDigit(grid: Grid, from: number): number | null {
   return null;
 }
 
+// A puzzle should never open with a blank selector: aim at the lowest
+// non-solved digit and its first legal cell. Used on run start and on every
+// depth advance.
+function lowestSelection(grid: Grid): {
+  activeDigit: number | null;
+  activeCell: number | null;
+} {
+  const d = nextIncompleteDigit(grid, 0);
+  if (d == null) return { activeDigit: null, activeCell: null };
+  const cells = cellsForDigit(grid, d);
+  return { activeDigit: d, activeCell: cells.length ? cells[0] : null };
+}
+
 function advance(state: RunState, ctx: Ctx): RunState {
   const config: RunConfig = ctx.config;
   let { score, fastestSolveMs, totalMs } = state;
@@ -71,8 +84,7 @@ function advance(state: RunState, ctx: Ctx): RunState {
     depth,
     grid,
     rating,
-    activeDigit: null,
-    activeCell: null,
+    ...lowestSelection(grid),
     puzzleStartMs: ctx.nowMs,
     score,
     fastestSolveMs,
@@ -81,15 +93,15 @@ function advance(state: RunState, ctx: Ctx): RunState {
 }
 
 export function initRun(config: RunConfig): RunState {
+  const grid = TUTORIAL_GRID.slice();
   return {
     status: "tutorial",
     mode: config.mode,
     seed: config.seed,
     depth: 1,
-    grid: TUTORIAL_GRID.slice(),
+    grid,
     rating: config.tutorialRating,
-    activeDigit: null,
-    activeCell: null,
+    ...lowestSelection(grid),
     puzzleStartMs: null,
     score: 0,
     fastestSolveMs: null,

@@ -44,6 +44,12 @@ function playingState(grid: Grid): RunState {
   };
 }
 
+function countDigit(grid: Grid, d: number): number {
+  let n = 0;
+  for (const x of grid) if (x === d) n++;
+  return n;
+}
+
 function findKillerMove(puzzle: Grid): { cell: number; digit: number } | null {
   const sol = solve(puzzle);
   if (!sol) return null;
@@ -65,6 +71,14 @@ describe("initRun", () => {
     expect(s.status).toBe("tutorial");
     expect(s.depth).toBe(1);
     expect(s.score).toBe(0);
+  });
+
+  it("opens with the lowest non-solved digit + its first legal cell selected", () => {
+    const s = initRun(config);
+    // The tutorial is missing one each of 2, 3, 7, 8 (1/4/5/6/9 are complete),
+    // so the lowest non-solved digit is 2, and the only legal cell for a 2 is 8.
+    expect(s.activeDigit).toBe(2);
+    expect(s.activeCell).toBe(8);
   });
 });
 
@@ -99,6 +113,36 @@ describe("reduce — completion advances and scores", () => {
     expect(s.score).toBeGreaterThan(0);
     expect(s.grid.filter((d) => d === 0).length).toBeGreaterThan(0); // fresh puzzle
     expect(s.puzzleStartMs).toBe(5000);
+  });
+});
+
+describe("advance — next puzzle opens pre-selected", () => {
+  it("a fresh puzzle starts with the lowest non-solved digit + a legal cell", () => {
+    // Complete the tutorial to advance into a real (depth-2) puzzle.
+    let s = initRun(config);
+    for (const [cell, digit] of [
+      [8, 2],
+      [17, 8],
+      [26, 7],
+      [35, 3],
+    ] as const) {
+      s = reduce(s, { type: "selectNumber", digit }, mkCtx(1000));
+      s = reduce(s, { type: "placeNumber", cell }, mkCtx(1000));
+    }
+    expect(s.status).toBe("playing");
+    // The selector must never be blank on a fresh puzzle.
+    expect(s.activeDigit).not.toBeNull();
+    expect(s.activeCell).not.toBeNull();
+    const d = s.activeDigit as number;
+    const cell = s.activeCell as number;
+    // It is the LOWEST non-solved digit…
+    for (let lower = 1; lower < d; lower++) {
+      expect(countDigit(s.grid, lower)).toBe(9);
+    }
+    expect(countDigit(s.grid, d)).toBeLessThan(9);
+    // …aimed at a legal, empty cell.
+    expect(s.grid[cell]).toBe(0);
+    expect(isSafe(s.grid, cell, d)).toBe(true);
   });
 });
 

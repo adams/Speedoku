@@ -24,14 +24,16 @@ function setup() {
 describe("useInputController", () => {
   it("first digit tap selects; tap of the active digit commits", () => {
     setup();
-    // The tutorial grid has empties; selecting a digit aims the cursor.
-    act(() => handlers.onDigit(2));
+    // The run opens pre-aimed at the lowest non-solved digit (2), so tap a
+    // different digit (3) to re-aim — the first tap selects.
     expect(store.getState().state.activeDigit).toBe(2);
+    act(() => handlers.onDigit(3));
+    expect(store.getState().state.activeDigit).toBe(3);
     const cell = store.getState().state.activeCell;
     expect(cell).not.toBeNull();
     // tap the active digit again -> commits into the aimed cell
-    act(() => handlers.onDigit(2));
-    expect(store.getState().state.grid[cell as number]).toBe(2);
+    act(() => handlers.onDigit(3));
+    expect(store.getState().state.grid[cell as number]).toBe(3);
   });
 
   it("board tap re-aims without placing (selectCell)", () => {
