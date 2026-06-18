@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DailyTeaser } from "@/components/daily/DailyTeaser";
 
 export default function Home() {
   return (
@@ -68,8 +69,12 @@ export default function Home() {
             animation: "shimmer 2.6s ease-in-out infinite",
           }}
         />
-        Play
+        Free Play
       </Link>
+
+      <div className="w-[min(300px,80vw)]">
+        <DailyTeaser />
+      </div>
 
       <style>{`
         @keyframes shimmer {
