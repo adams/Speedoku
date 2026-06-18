@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Board } from "@/components/board/Board";
 import { PreGame } from "@/components/chrome/PreGame";
@@ -87,7 +88,11 @@ export default function PlayPage() {
     <>
       {/* ── Mobile-only header ─────────────────────────────────────── */}
       <header className="lg:hidden flex items-center justify-between px-4 pt-4 pb-1">
-        <span className="text-xl font-extrabold tracking-[-0.02em] select-none leading-none">
+        <Link
+          href="/"
+          aria-label="Home"
+          className="text-xl font-extrabold tracking-[-0.02em] select-none leading-none"
+        >
           <span
             style={{
               background:
@@ -100,7 +105,7 @@ export default function PlayPage() {
             Speed
           </span>
           <span style={{ color: "var(--color-ink)" }}>oku</span>
-        </span>
+        </Link>
         <Pill>hints</Pill>
       </header>
 
@@ -174,7 +179,11 @@ export default function PlayPage() {
         <aside className="rise-late hidden w-[212px] shrink-0 lg:flex lg:flex-col lg:gap-5">
           {/* Wordmark + mode badge */}
           <div className="flex items-center justify-between">
-            <span className="select-none text-[27px] font-extrabold leading-none tracking-[-0.02em]">
+            <Link
+              href="/"
+              aria-label="Home"
+              className="select-none text-[27px] font-extrabold leading-none tracking-[-0.02em]"
+            >
               <span
                 style={{
                   background:
@@ -187,7 +196,7 @@ export default function PlayPage() {
                 Speed
               </span>
               <span style={{ color: "var(--color-ink)" }}>oku</span>
-            </span>
+            </Link>
             <Pill>hints</Pill>
           </div>
 
