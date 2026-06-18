@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Leaderboard } from "@/components/daily/Leaderboard";
 import { NameEntry } from "@/components/daily/NameEntry";
 import { NextDailyNote } from "@/components/daily/NextDailyNote";
@@ -76,6 +77,24 @@ export function DailyResult({
       <NameEntry initialName={profileName} onSubmit={onSubmitName} />
       <ShareCard text={shareText} />
       <NextDailyNote nextDate={nextDateString(dateStr)} />
+
+      <Link
+        href="/play"
+        className="block w-full rounded-card py-3 text-center text-base font-extrabold text-white"
+        style={{
+          background:
+            "linear-gradient(140deg,var(--color-accent) 0%,var(--color-cyan) 140%)",
+          boxShadow: "var(--glow-accent)",
+        }}
+      >
+        Play Free Play →
+      </Link>
+      <Link
+        href="/"
+        className="block text-center text-[12px] font-semibold text-muted"
+      >
+        Home
+      </Link>
     </div>
   );
 }

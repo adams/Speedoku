@@ -57,4 +57,25 @@ describe("DailyResult", () => {
     // The share card text appears in the ShareCard <pre>.
     expect(screen.getByText(/Speedoku Daily/)).toBeInTheDocument();
   });
+
+  it("links to Free Play and Home", () => {
+    render(
+      <DailyResult
+        dateStr="2026-06-17"
+        summary={summary}
+        streak={streak}
+        leaderboard={leaderboard}
+        rank={2}
+        onSubmitName={vi.fn().mockResolvedValue(true)}
+      />,
+    );
+    expect(screen.getByRole("link", { name: /free play/i })).toHaveAttribute(
+      "href",
+      "/play",
+    );
+    expect(screen.getByRole("link", { name: /home/i })).toHaveAttribute(
+      "href",
+      "/",
+    );
+  });
 });
