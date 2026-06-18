@@ -34,6 +34,7 @@ export function DailyResult({
     timeMs: summary.totalMs,
     streak: streak.currentStreak,
     rank,
+    name: profileName,
   });
 
   return (

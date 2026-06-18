@@ -48,4 +48,33 @@ describe("formatShareCard", () => {
     // No row of 9 digits (a board leak) should appear.
     expect(card).not.toMatch(/\d{9}/);
   });
+
+  it("includes the player name in the title line when name is provided", () => {
+    const namedCard = formatShareCard({
+      dateStr: "2026-06-17",
+      depth: 9,
+      score: 4820,
+      timeMs: 192000,
+      streak: 5,
+      rank: 7,
+      name: "Mike",
+    });
+    const titleLine = namedCard.split("\n")[0];
+    expect(titleLine).toContain("Mike");
+    expect(titleLine).toContain("Speedoku Daily");
+  });
+
+  it("does not append a trailing separator when name is omitted", () => {
+    const noNameCard = formatShareCard({
+      dateStr: "2026-06-17",
+      depth: 9,
+      score: 4820,
+      timeMs: 192000,
+      streak: 5,
+      rank: 7,
+    });
+    const titleLine = noNameCard.split("\n")[0];
+    // Title line should be exactly "🟦 Speedoku Daily · 2026-06-17" — no trailing " · "
+    expect(titleLine).toBe("🟦 Speedoku Daily · 2026-06-17");
+  });
 });
