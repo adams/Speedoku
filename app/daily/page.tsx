@@ -72,9 +72,18 @@ export default function DailyPage() {
 
   // After load, if today is already consumed, jump straight to the result.
   const routedConsumed = useRef(false);
+  // Set to true the moment the user clicks Start — prevents the routing effect
+  // from treating this session's own inProgress record as an abandoned prior run.
+  const startedThisSession = useRef(false);
   // biome-ignore lint/correctness/useExhaustiveDependencies: loadLeaderboard identity is stable (useCallback with date dep); listing it would cause spurious re-runs if the ref changes
   useEffect(() => {
-    if (!daily.loaded || !date || routedConsumed.current) return;
+    if (
+      !daily.loaded ||
+      !date ||
+      routedConsumed.current ||
+      startedThisSession.current
+    )
+      return;
     if (
       daily.record?.status === "final" ||
       daily.record?.status === "inProgress"
@@ -102,6 +111,7 @@ export default function DailyPage() {
   }, [status, store]);
 
   const onStart = async () => {
+    startedThisSession.current = true; // block consumed-day routing for this session's own inProgress record
     await daily.start();
     setPhase("run");
   };

@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import "@/tests/support/jsdomLocalStorage";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import DailyPage from "@/app/daily/page";
 import { dailyDateString } from "@/lib/daily/date";
@@ -9,12 +15,27 @@ import { createLocalDailyService } from "@/lib/daily/localDailyService";
 describe("/daily", () => {
   beforeEach(() => window.localStorage.clear());
 
-  it("opens on the gate, then starts the run on Start", async () => {
+  it("opens on the gate, then starts the run on Start — run is playable, not routed to result", async () => {
     render(<DailyPage />);
     const start = await screen.findByRole("button", { name: /start/i });
     fireEvent.click(start);
-    // The HUD (depth/score) appears once the run begins.
-    await waitFor(() => expect(screen.getByText(/depth/i)).toBeInTheDocument());
+    // "Give up" renders only during the run phase — proves we're in a live run.
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /give up/i }),
+      ).toBeInTheDocument(),
+    );
+    // Flush all pending timers/promises so the consumed-day routing effect
+    // has every opportunity to fire (replicates the bug: start() sets inProgress
+    // record → effect sees inProgress → routes to result before the fix).
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 100));
+    });
+    // After settling, the run must still be active — not the result screen.
+    expect(screen.queryByText(/daily complete/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /give up/i }),
+    ).toBeInTheDocument();
   });
 
   it("revisiting after a consumed day shows the result, not the gate", async () => {
