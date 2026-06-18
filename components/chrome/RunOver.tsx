@@ -39,9 +39,9 @@ export function RunOver({
     { label: "Total time", value: mmss(summary.totalMs), isNew: false },
   ];
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-[--color-board]/85 backdrop-blur-md">
+    <div className="absolute inset-0 z-20 flex items-center justify-center bg-board/85 backdrop-blur-md">
       <div
-        className="w-[320px] overflow-hidden rounded-card bg-[--color-cell] shadow-[0_8px_40px_rgba(0,0,0,0.14)]"
+        className="w-[320px] overflow-hidden rounded-card bg-cell shadow-[0_8px_40px_rgba(0,0,0,0.14)]"
         style={{ border: "1px solid var(--color-line)" }}
       >
         {/* Gradient accent strip */}
@@ -57,27 +57,27 @@ export function RunOver({
         <div className="p-7">
           {/* Header */}
           <div className="mb-6">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[--color-muted]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
               Run complete
             </p>
-            <h2 className="mt-0.5 text-2xl font-extrabold tracking-tight text-[--color-ink]">
+            <h2 className="mt-0.5 text-2xl font-extrabold tracking-tight text-ink">
               Run over
             </h2>
           </div>
 
           {/* Stats */}
-          <dl className="flex flex-col divide-y divide-[--color-line]">
+          <dl className="flex flex-col divide-y divide-line">
             {rows.map((row) => (
               <div
                 key={row.label}
                 className="flex items-center justify-between py-2.5"
               >
-                <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-[--color-muted]">
+                <dt className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
                   {row.label}
                 </dt>
-                <dd className="flex items-center gap-2 text-xl font-extrabold tabular-nums text-[--color-ink]">
+                <dd className="flex items-center gap-2 text-xl font-extrabold tabular-nums text-ink">
                   {row.isNew && (
-                    <span className="rounded-full bg-[--color-mint] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                    <span className="rounded-full bg-mint px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                       New best!
                     </span>
                   )}
@@ -88,7 +88,7 @@ export function RunOver({
           </dl>
 
           {bests.bestScore > 0 && !isNewBest.score && (
-            <p className="mt-4 text-center text-[12px] font-semibold text-[--color-muted]">
+            <p className="mt-4 text-center text-[12px] font-semibold text-muted">
               Best {bests.bestScore.toLocaleString()}
             </p>
           )}

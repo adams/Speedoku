@@ -12,9 +12,7 @@ export function Leaderboard({ entries }: { entries: LeaderboardEntry[] }) {
           key={`${e.name}-${i}`}
           data-testid={e.isYou ? "lb-you" : undefined}
           className={`flex items-center justify-between rounded-md px-3 py-1.5 text-[13px] ${
-            e.isYou
-              ? "bg-[--color-accent] font-bold text-white"
-              : "bg-[--color-cell] text-[--color-ink]"
+            e.isYou ? "bg-accent font-bold text-white" : "bg-cell text-ink"
           }`}
         >
           <span className="flex items-center gap-2">

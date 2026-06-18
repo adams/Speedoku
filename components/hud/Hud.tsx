@@ -21,17 +21,17 @@ export function Hud({
   const elapsed = useElapsed(store);
 
   return (
-    <div className="relative flex items-stretch justify-between gap-4 rounded-[--radius-card] bg-[--color-cell] px-5 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
+    <div className="relative flex items-stretch justify-between gap-4 rounded-card bg-cell px-5 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
       {/* Depth */}
       <StatBlock label="Depth" value={String(depth)} />
 
       {/* Timer — runs on every puzzle, depth 1 included */}
       {status === "playing" && (
         <div className="flex flex-col items-center leading-none">
-          <span className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[--color-muted]">
+          <span className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
             Time
           </span>
-          <span className="font-extrabold tabular-nums text-[22px] leading-tight tracking-tight text-[--color-muted]">
+          <span className="font-extrabold tabular-nums text-[22px] leading-tight tracking-tight text-muted">
             {mmss(elapsed)}
           </span>
         </div>
@@ -56,7 +56,7 @@ export function Hud({
 
       {/* Hints badge — only in hints-on mode */}
       {mode === "hints-on" && (
-        <span className="absolute -top-2.5 right-4 rounded-full bg-[--color-accent] px-3 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
+        <span className="absolute -top-2.5 right-4 rounded-full bg-accent px-3 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
           hints
         </span>
       )}
@@ -78,12 +78,12 @@ function StatBlock({
   const alignClass = align === "right" ? "items-end" : "items-start";
   return (
     <div className={`flex flex-col leading-none ${alignClass}`}>
-      <span className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[--color-muted]">
+      <span className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted">
         {label}
       </span>
       <span
         className={`font-extrabold tabular-nums leading-tight ${
-          hero ? "text-[32px] tracking-tight text-[--color-accent]" : "text-2xl"
+          hero ? "text-[32px] tracking-tight text-accent" : "text-2xl"
         }`}
       >
         {value}

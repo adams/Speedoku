@@ -100,7 +100,7 @@ export default function PlayPage() {
           </span>
           <span style={{ color: "var(--color-ink)" }}>oku</span>
         </span>
-        <span className="rounded-full bg-[--color-accent] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
+        <span className="rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
           hints
         </span>
       </header>
@@ -136,10 +136,10 @@ export default function PlayPage() {
             </div>
             {t.transitioning && (
               <div className="depth-stamp pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center">
-                <span className="text-5xl font-extrabold tracking-tight text-[--color-ink]">
+                <span className="text-5xl font-extrabold tracking-tight text-ink">
                   {t.stampDepth}
                 </span>
-                <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[--color-cyan]">
+                <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-cyan">
                   Depth ↓
                 </span>
               </div>
@@ -156,7 +156,7 @@ export default function PlayPage() {
             // would fire both the button and the window handler → double-place.
             onMouseDown={(e) => e.preventDefault()}
             disabled={status !== "playing" || activeCell == null}
-            className="relative w-full overflow-hidden rounded-[--radius-card] py-3.5 text-base font-extrabold tracking-wide text-white transition-transform active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
+            className="relative w-full overflow-hidden rounded-card py-3.5 text-base font-extrabold tracking-wide text-white transition-transform active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
             style={{
               background:
                 "linear-gradient(140deg,var(--color-accent) 0%,var(--color-cyan) 140%)",
@@ -166,7 +166,7 @@ export default function PlayPage() {
             Submit
           </button>
 
-          <p className="text-center text-[12.5px] font-semibold text-[--color-muted] lg:hidden">
+          <p className="text-center text-[12.5px] font-semibold text-muted lg:hidden">
             Tap a number to aim · arrows move · Submit (or Enter) places
           </p>
         </div>
@@ -189,14 +189,14 @@ export default function PlayPage() {
               </span>
               <span style={{ color: "var(--color-ink)" }}>oku</span>
             </span>
-            <span className="rounded-full bg-[--color-accent] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
+            <span className="rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[var(--glow-accent)]">
               hints
             </span>
           </div>
 
           {/* Controls guide */}
           <div
-            className="relative overflow-hidden rounded-[--radius-card] bg-[--color-cell] p-4 shadow-[0_8px_30px_-12px_rgba(23,26,43,0.18)]"
+            className="relative overflow-hidden rounded-card bg-cell p-4 shadow-[0_8px_30px_-12px_rgba(23,26,43,0.18)]"
             style={{ border: "1px solid var(--color-line)" }}
           >
             <span
@@ -207,7 +207,7 @@ export default function PlayPage() {
                   "linear-gradient(90deg,var(--color-accent),var(--color-cyan))",
               }}
             />
-            <p className="mb-3 mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[--color-muted]">
+            <p className="mb-3 mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
               Controls
             </p>
             <dl className="flex flex-col gap-2.5">
@@ -221,10 +221,10 @@ export default function PlayPage() {
                   key={label}
                   className="flex items-center justify-between gap-2"
                 >
-                  <dt className="text-[12px] leading-none text-[--color-muted]">
+                  <dt className="text-[12px] leading-none text-muted">
                     {label}
                   </dt>
-                  <dd className="shrink-0 rounded-md border border-[--color-line] bg-[--color-cell-given] px-2 py-1 text-[11px] font-bold leading-none tabular-nums text-[--color-ink]">
+                  <dd className="shrink-0 rounded-md border border-line bg-cell-given px-2 py-1 text-[11px] font-bold leading-none tabular-nums text-ink">
                     {keys}
                   </dd>
                 </div>

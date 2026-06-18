@@ -19,14 +19,14 @@ export default function Home() {
           </span>
           <span style={{ color: "var(--color-ink)" }}>oku</span>
         </h1>
-        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[--color-muted]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted">
           Speed · Depth · Score
         </p>
       </div>
 
-      <p className="max-w-[300px] text-lg leading-relaxed text-[--color-muted]">
+      <p className="max-w-[300px] text-lg leading-relaxed text-muted">
         A speed-first, roguelike Sudoku.{" "}
-        <span className="font-semibold text-[--color-ink]">
+        <span className="font-semibold text-ink">
           One wrong move can corner you.
         </span>
       </p>
@@ -37,7 +37,7 @@ export default function Home() {
           (tag) => (
             <span
               key={tag}
-              className="rounded-full px-3 py-1 text-[12px] font-semibold text-[--color-muted]"
+              className="rounded-full px-3 py-1 text-[12px] font-semibold text-muted"
               style={{
                 background: "var(--color-cell)",
                 border: "1px solid var(--color-line)",

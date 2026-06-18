@@ -38,17 +38,14 @@ export function DailyResult({
   });
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-5 rounded-[--radius-card] border border-[--color-line] bg-[--color-cell] p-5 shadow-[0_8px_30px_-12px_rgba(23,26,43,0.18)]">
+    <div className="flex w-full max-w-md flex-col gap-5 rounded-card border border-line bg-cell p-5 shadow-[0_8px_30px_-12px_rgba(23,26,43,0.18)]">
       <header className="text-center">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[--color-cyan]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan">
           Daily complete · {dateStr}
         </p>
-        <p className="mt-1 text-sm font-semibold text-[--color-accent]">
+        <p className="mt-1 text-sm font-semibold text-accent">
           🔥 {streak.currentStreak}-day streak
-          <span className="text-[--color-muted]">
-            {" "}
-            · best {streak.bestStreak}
-          </span>
+          <span className="text-muted"> · best {streak.bestStreak}</span>
         </p>
       </header>
 
@@ -58,11 +55,11 @@ export function DailyResult({
           ["Score", summary.score.toLocaleString("en-US")],
           ["Time", mmss(summary.totalMs)],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-md bg-[--color-cell-given] py-2">
-            <dt className="text-[10px] font-bold uppercase tracking-wide text-[--color-muted]">
+          <div key={label} className="rounded-md bg-cell-given py-2">
+            <dt className="text-[10px] font-bold uppercase tracking-wide text-muted">
               {label}
             </dt>
-            <dd className="text-lg font-extrabold tabular-nums text-[--color-ink]">
+            <dd className="text-lg font-extrabold tabular-nums text-ink">
               {value}
             </dd>
           </div>
@@ -70,7 +67,7 @@ export function DailyResult({
       </dl>
 
       <section className="flex flex-col gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-[--color-muted]">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-muted">
           Today&apos;s leaderboard · you&apos;re #{rank}
         </p>
         <Leaderboard entries={leaderboard} />

@@ -17,13 +17,13 @@ export function ShareCard({ text }: { text: string }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <pre className="whitespace-pre-wrap rounded-[--radius-card] border border-[--color-line] bg-[--color-cell] p-3 text-[13px] leading-relaxed text-[--color-ink]">
+      <pre className="whitespace-pre-wrap rounded-card border border-line bg-cell p-3 text-[13px] leading-relaxed text-ink">
         {text}
       </pre>
       <button
         type="button"
         onClick={copy}
-        className="rounded-[--radius-card] py-2.5 text-sm font-bold text-white"
+        className="rounded-card py-2.5 text-sm font-bold text-white"
         style={{
           background:
             "linear-gradient(140deg,var(--color-accent) 0%,var(--color-cyan) 140%)",

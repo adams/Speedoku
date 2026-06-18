@@ -2,7 +2,7 @@
 
 export function PreGame({ onStart }: { onStart: () => void }) {
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-10 bg-[--color-board]/85 backdrop-blur-md">
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-10 bg-board/85 backdrop-blur-md">
       {/* Wordmark */}
       <div className="flex flex-col items-center gap-2">
         <h1 className="text-6xl font-extrabold tracking-[-0.03em] leading-none select-none">
@@ -19,7 +19,7 @@ export function PreGame({ onStart }: { onStart: () => void }) {
           </span>
           <span style={{ color: "var(--color-ink)" }}>oku</span>
         </h1>
-        <p className="text-sm font-semibold tracking-[0.18em] uppercase text-[--color-muted]">
+        <p className="text-sm font-semibold tracking-[0.18em] uppercase text-muted">
           Speed · Depth · Score
         </p>
       </div>

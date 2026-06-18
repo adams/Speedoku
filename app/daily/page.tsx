@@ -162,7 +162,7 @@ export default function DailyPage() {
               onClick={onSubmit}
               onMouseDown={(e) => e.preventDefault()}
               disabled={status !== "playing" || activeCell == null}
-              className="relative w-full overflow-hidden rounded-[--radius-card] py-3.5 text-base font-extrabold tracking-wide text-white transition-transform active:scale-[0.98] disabled:opacity-40"
+              className="relative w-full overflow-hidden rounded-card py-3.5 text-base font-extrabold tracking-wide text-white transition-transform active:scale-[0.98] disabled:opacity-40"
               style={{
                 background:
                   "linear-gradient(140deg,var(--color-accent) 0%,var(--color-cyan) 140%)",
