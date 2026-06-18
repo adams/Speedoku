@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
+import { DailyTeaser } from "@/components/daily/DailyTeaser";
 import type { Bests, NewBest } from "@/lib/data/types";
 import { EMPTY_BESTS } from "@/lib/data/types";
 import type { RunSummary } from "@/lib/run/types";
@@ -241,6 +243,16 @@ export function RunOver({
           >
             Play again
           </button>
+
+          <div className="mt-3">
+            <DailyTeaser />
+          </div>
+          <Link
+            href="/"
+            className="mt-3 block text-center text-[12px] font-semibold text-muted"
+          >
+            Home
+          </Link>
         </div>
       </div>
     </div>
