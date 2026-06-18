@@ -29,6 +29,7 @@ describe("localDailyService", () => {
       status: "inProgress",
       score: 0,
       depth: 0,
+      totalMs: 0,
     });
     expect(streak.currentStreak).toBe(1);
     expect(streak.bestStreak).toBe(1);
@@ -59,9 +60,14 @@ describe("localDailyService", () => {
     await s.startAttempt("2026-06-17");
     const rec = await s.finalizeAttempt(
       "2026-06-17",
-      sum({ score: 4820, depth: 9 }),
+      sum({ score: 4820, depth: 9, totalMs: 192000 }),
     );
-    expect(rec).toMatchObject({ status: "final", score: 4820, depth: 9 });
+    expect(rec).toMatchObject({
+      status: "final",
+      score: 4820,
+      depth: 9,
+      totalMs: 192000,
+    });
     const again = await s.finalizeAttempt(
       "2026-06-17",
       sum({ score: 99999, depth: 99 }),

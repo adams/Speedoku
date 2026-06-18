@@ -54,6 +54,7 @@ function readRecord(date: string): DailyRecord | null {
     depth: typeof r.depth === "number" ? r.depth : 0,
     fastestSolveMs:
       typeof r.fastestSolveMs === "number" ? r.fastestSolveMs : null,
+    totalMs: typeof r.totalMs === "number" ? r.totalMs : 0,
     name: typeof r.name === "string" ? r.name : undefined,
   };
 }
@@ -96,6 +97,7 @@ export function createLocalDailyService(): DailyService {
         score: 0,
         depth: 0,
         fastestSolveMs: null,
+        totalMs: 0,
         name: readProfile().name,
       };
       write(dailyKey(date), record);
@@ -111,6 +113,7 @@ export function createLocalDailyService(): DailyService {
         score: summary.score,
         depth: summary.depth,
         fastestSolveMs: summary.fastestSolveMs,
+        totalMs: summary.totalMs,
         name: existing?.name ?? readProfile().name,
       };
       write(dailyKey(date), record);

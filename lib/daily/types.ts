@@ -8,6 +8,7 @@ export interface DailyRecord {
   score: number;
   depth: number;
   fastestSolveMs: number | null;
+  totalMs: number;
   name?: string;
 }
 

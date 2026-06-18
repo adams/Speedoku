@@ -11,14 +11,27 @@ import { dailyDateString } from "@/lib/daily/date";
 import { createLocalDailyService } from "@/lib/daily/localDailyService";
 import { createMockLeaderboard } from "@/lib/daily/mockLeaderboard";
 import { seedFromDate } from "@/lib/daily/seed";
+import type { DailyRecord } from "@/lib/daily/types";
 import { useDaily } from "@/lib/daily/useDaily";
 import type { BankFile } from "@/lib/engine/banks";
 import bank from "@/lib/engine/banks/banks.fixture.json";
 import { useInputController } from "@/lib/input/useInputController";
 import { summarize } from "@/lib/run/reduce";
 import { createRunStore } from "@/lib/run/store";
+import type { RunSummary } from "@/lib/run/types";
 import { useRunSelector } from "@/lib/run/useRunStore";
 import { useDepthTransition } from "@/lib/ui/useDepthTransition";
+
+function recordToSummary(record: DailyRecord, seed: number): RunSummary {
+  return {
+    depth: record.depth,
+    score: record.score,
+    fastestSolveMs: record.fastestSolveMs,
+    totalMs: record.totalMs,
+    mode: "hints-on",
+    seed,
+  };
+}
 
 type Phase = "gate" | "run" | "result";
 
@@ -110,7 +123,7 @@ export default function DailyPage() {
         {phase === "result" && daily.record ? (
           <DailyResult
             dateStr={date}
-            summary={summarize(store.getState().state)}
+            summary={recordToSummary(daily.record, seed)}
             streak={daily.streak}
             leaderboard={daily.leaderboard}
             rank={daily.rank}

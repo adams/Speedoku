@@ -54,7 +54,7 @@ export function useDaily(
         name: r.name ?? "You",
         depth: r.depth,
         score: r.score,
-        timeMs: 0, // totalMs isn't on the record; share card uses the summary
+        timeMs: r.totalMs,
         isYou: true,
       };
       const rows = await leaderboardRef.current.getDaily(date, me);
@@ -73,12 +73,11 @@ export function useDaily(
     async (summary: RunSummary) => {
       const r = await dailyRef.current.finalizeAttempt(date, summary);
       setRecord(r);
-      // The record lacks totalMs; carry it onto the "me" entry via the summary.
       const me: LeaderboardEntry = {
         name: r.name ?? "You",
         depth: r.depth,
         score: r.score,
-        timeMs: summary.totalMs,
+        timeMs: r.totalMs,
         isYou: true,
       };
       setLeaderboard(await leaderboardRef.current.getDaily(date, me));
