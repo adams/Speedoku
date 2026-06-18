@@ -62,7 +62,10 @@ export default function DailyPage() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: loadLeaderboard identity is stable (useCallback with date dep); listing it would cause spurious re-runs if the ref changes
   useEffect(() => {
     if (!daily.loaded || !date || routedConsumed.current) return;
-    if (daily.record?.status) {
+    if (
+      daily.record?.status === "final" ||
+      daily.record?.status === "inProgress"
+    ) {
       routedConsumed.current = true;
       daily.loadLeaderboard(daily.record).then(() => setPhase("result"));
     }
