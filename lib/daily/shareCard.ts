@@ -19,7 +19,7 @@ function depthBar(depth: number): string {
 export function formatShareCard(input: ShareCardInput): string {
   const { dateStr, depth, score, timeMs, streak, rank } = input;
   return [
-    `Speedoku Daily · ${dateStr}`,
+    `🟦 Speedoku Daily · ${dateStr}`,
     `Depth ${depth} ▼  ${depthBar(depth)}`,
     `${score.toLocaleString("en-US")} pts · ${mmss(timeMs)}`,
     `🔥 ${streak}-day streak · #${rank} today`,

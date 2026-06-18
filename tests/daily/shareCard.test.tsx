@@ -23,8 +23,9 @@ describe("formatShareCard", () => {
   });
 
   it("renders a depth bar capped at DEPTH_BAR_CAP squares", () => {
-    const filled = (card.match(/🟦/g) ?? []).length;
-    const empty = (card.match(/⬜/g) ?? []).length;
+    const depthLine = card.split("\n")[1];
+    const filled = (depthLine.match(/🟦/g) ?? []).length;
+    const empty = (depthLine.match(/⬜/g) ?? []).length;
     expect(filled).toBe(9);
     expect(filled + empty).toBe(DEPTH_BAR_CAP);
   });
@@ -38,8 +39,9 @@ describe("formatShareCard", () => {
       streak: 1,
       rank: 1,
     });
-    expect((deep.match(/🟦/g) ?? []).length).toBe(DEPTH_BAR_CAP);
-    expect((deep.match(/⬜/g) ?? []).length).toBe(0);
+    const depthLine = deep.split("\n")[1];
+    expect((depthLine.match(/🟦/g) ?? []).length).toBe(DEPTH_BAR_CAP);
+    expect((depthLine.match(/⬜/g) ?? []).length).toBe(0);
   });
 
   it("is spoiler-safe — contains no Sudoku grid digits cluster", () => {
