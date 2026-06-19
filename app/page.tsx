@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DailyTeaser } from "@/components/daily/DailyTeaser";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
 export default function Home() {
   return (
@@ -75,6 +76,8 @@ export default function Home() {
       <div className="w-[min(300px,80vw)]">
         <DailyTeaser />
       </div>
+
+      <InstallPrompt />
 
       <style>{`
         @keyframes shimmer {
