@@ -31,6 +31,12 @@
   --cursor-glow: 0 6px 18px rgba(34, 211, 238, 0.32);
 }
 
+/* Kill the iOS standalone-PWA document rubber-band (honored in standalone, ignored
+   in a Safari tab). Pages still scroll when content is taller than the viewport. */
+html {
+  overscroll-behavior: none;
+}
+
 body {
   background:
     radial-gradient(900px 520px at 18% -8%, rgba(255, 61, 119, 0.13), transparent 60%),
@@ -38,6 +44,7 @@ body {
     linear-gradient(180deg, var(--color-bg), var(--color-bg-2));
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 /* ── Staggered page-load entrance ─────────────────────────────────── */
