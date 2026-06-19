@@ -83,162 +83,147 @@ export default function PlayPage() {
     setPhase("run");
   };
 
+  // Game: one centered stack + a balanced desktop sidebar. No mobile header —
+  // it sat in the flow, stole vertical height, and pushed the board down
+  // (matches /daily). Mobile home nav intentionally dropped; the desktop
+  // sidebar keeps its wordmark link.
   return (
-    <>
-      {/* ── Mobile-only header: an explicit back-to-home control ───── */}
-      <header className="lg:hidden flex items-center px-4 pt-4 pb-1">
-        <Link
-          href="/"
-          aria-label="Home"
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-sm font-semibold text-muted leading-none transition-colors active:text-ink"
-        >
-          <span aria-hidden="true" className="text-base leading-none">
-            ‹
-          </span>
-          Home
-        </Link>
-      </header>
+    <main className="relative flex flex-1 flex-col items-center gap-5 px-4 pt-3 pb-8 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:px-8 lg:py-10">
+      {/* ── Game stack: HUD + board + pad all share one width ──────── */}
+      <div
+        className="rise flex flex-col gap-3"
+        style={{ width: "min(540px, 90vmin, 54vh)" }}
+      >
+        <Hud store={store} bests={bests} />
 
-      {/* ── Main layout: one centered game stack + a balanced sidebar ── */}
-      <main className="relative flex flex-1 flex-col items-center gap-5 px-4 pt-3 pb-8 lg:flex-row lg:items-center lg:justify-center lg:gap-12 lg:px-8 lg:py-10">
-        {/* ── Game stack: HUD + board + pad all share one width ──────── */}
         <div
-          className="rise flex flex-col gap-3"
-          style={{ width: "min(540px, 90vmin, 54vh)" }}
+          className={`board-stage relative${t.transitioning ? " is-transition" : ""}`}
         >
-          <Hud store={store} bests={bests} />
-
           <div
-            className={`board-stage relative${t.transitioning ? " is-transition" : ""}`}
+            className={
+              t.phase === "exit"
+                ? "board-exit"
+                : t.phase === "enter"
+                  ? "board-enter"
+                  : ""
+            }
           >
-            <div
-              className={
-                t.phase === "exit"
-                  ? "board-exit"
-                  : t.phase === "enter"
-                    ? "board-enter"
-                    : ""
-              }
-            >
-              <Board
-                grid={t.displayGrid}
-                activeDigit={activeDigit}
-                activeCell={activeCell}
-                onSelectCell={onSelectCell}
-                bloom={t.phase === "exit"}
-              />
-            </div>
-            {t.transitioning && (
-              <div className="depth-stamp pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center">
-                <span className="text-5xl font-extrabold tracking-tight text-ink">
-                  {t.stampDepth}
-                </span>
-                <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-cyan">
-                  Depth ↓
-                </span>
-              </div>
-            )}
+            <Board
+              grid={t.displayGrid}
+              activeDigit={activeDigit}
+              activeCell={activeCell}
+              onSelectCell={onSelectCell}
+              bloom={t.phase === "exit"}
+            />
           </div>
-
-          <NumberPad grid={grid} activeDigit={activeDigit} onDigit={onDigit} />
-
-          {/* Submit — the only way to place. The pad just picks the number. */}
-          <button
-            type="button"
-            onClick={onSubmit}
-            // Don't let a mouse click leave the button focused, or a later Enter
-            // would fire both the button and the window handler → double-place.
-            onMouseDown={(e) => e.preventDefault()}
-            disabled={status !== "playing" || activeCell == null}
-            className="relative w-full overflow-hidden rounded-card py-3.5 text-base font-extrabold tracking-wide text-white transition-transform active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
-            style={{
-              background:
-                "linear-gradient(140deg,var(--color-accent) 0%,var(--color-cyan) 140%)",
-              boxShadow: "var(--glow-accent)",
-            }}
-          >
-            Submit
-          </button>
-
-          <p className="text-center text-[12.5px] font-semibold text-muted lg:hidden">
-            Tap a number to aim · arrows move · Submit (or Enter) places
-          </p>
+          {t.transitioning && (
+            <div className="depth-stamp pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center">
+              <span className="text-5xl font-extrabold tracking-tight text-ink">
+                {t.stampDepth}
+              </span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-cyan">
+                Depth ↓
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* ── Desktop sidebar ──────────────────────────────────────── */}
-        <aside className="rise-late hidden w-[212px] shrink-0 lg:flex lg:flex-col lg:gap-5">
-          {/* Wordmark + mode badge */}
-          <div className="flex items-center justify-between">
-            <Link
-              href="/"
-              aria-label="Home"
-              className="select-none text-[27px] font-extrabold leading-none tracking-[-0.02em]"
-            >
-              <span
-                style={{
-                  background:
-                    "linear-gradient(110deg,var(--color-accent) 0%,var(--color-cyan) 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                Speed
-              </span>
-              <span style={{ color: "var(--color-ink)" }}>oku</span>
-            </Link>
-          </div>
+        <NumberPad grid={grid} activeDigit={activeDigit} onDigit={onDigit} />
 
-          {/* Controls guide */}
-          <div
-            className="relative overflow-hidden rounded-card bg-cell p-4 shadow-[0_8px_30px_-12px_rgba(23,26,43,0.18)]"
-            style={{ border: "1px solid var(--color-line)" }}
+        {/* Submit — the only way to place. The pad just picks the number. */}
+        <button
+          type="button"
+          onClick={onSubmit}
+          // Don't let a mouse click leave the button focused, or a later Enter
+          // would fire both the button and the window handler → double-place.
+          onMouseDown={(e) => e.preventDefault()}
+          disabled={status !== "playing" || activeCell == null}
+          className="relative w-full overflow-hidden rounded-card py-3.5 text-base font-extrabold tracking-wide text-white transition-transform active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
+          style={{
+            background:
+              "linear-gradient(140deg,var(--color-accent) 0%,var(--color-cyan) 140%)",
+            boxShadow: "var(--glow-accent)",
+          }}
+        >
+          Submit
+        </button>
+
+        <p className="text-center text-[12.5px] font-semibold text-muted lg:hidden">
+          Tap a number to aim · arrows move · Submit (or Enter) places
+        </p>
+      </div>
+
+      {/* ── Desktop sidebar ──────────────────────────────────────── */}
+      <aside className="rise-late hidden w-[212px] shrink-0 lg:flex lg:flex-col lg:gap-5">
+        {/* Wordmark + mode badge */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            aria-label="Home"
+            className="select-none text-[27px] font-extrabold leading-none tracking-[-0.02em]"
           >
             <span
-              aria-hidden="true"
-              className="absolute inset-x-0 top-0 h-[3px]"
               style={{
                 background:
-                  "linear-gradient(90deg,var(--color-accent),var(--color-cyan))",
+                  "linear-gradient(110deg,var(--color-accent) 0%,var(--color-cyan) 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
-            />
-            <p className="mb-3 mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-              Controls
-            </p>
-            <dl className="flex flex-col gap-2.5">
-              {[
-                ["Select number", "1–9"],
-                ["Move · valid cells", "← ↑ → ↓"],
-                ["Skip empty cell", "Tab ⇧Tab"],
-                ["Submit / place", "Enter"],
-              ].map(([label, keys]) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between gap-2"
-                >
-                  <dt className="text-[12px] leading-none text-muted">
-                    {label}
-                  </dt>
-                  <dd className="shrink-0 rounded-md border border-line bg-cell-given px-2 py-1 text-[11px] font-bold leading-none tabular-nums text-ink">
-                    {keys}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </aside>
+            >
+              Speed
+            </span>
+            <span style={{ color: "var(--color-ink)" }}>oku</span>
+          </Link>
+        </div>
 
-        {/* ── Overlays ─────────────────────────────────────────────── */}
-        {phase === "pre" && <PreGame onStart={() => setPhase("run")} />}
-        {status === "runOver" && (
-          <RunOver
-            summary={summarize(store.getState().state)}
-            onPlayAgain={playAgain}
-            bests={bests}
-            isNewBest={isNewBest ?? undefined}
+        {/* Controls guide */}
+        <div
+          className="relative overflow-hidden rounded-card bg-cell p-4 shadow-[0_8px_30px_-12px_rgba(23,26,43,0.18)]"
+          style={{ border: "1px solid var(--color-line)" }}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-[3px]"
+            style={{
+              background:
+                "linear-gradient(90deg,var(--color-accent),var(--color-cyan))",
+            }}
           />
-        )}
-      </main>
-    </>
+          <p className="mb-3 mt-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+            Controls
+          </p>
+          <dl className="flex flex-col gap-2.5">
+            {[
+              ["Select number", "1–9"],
+              ["Move · valid cells", "← ↑ → ↓"],
+              ["Skip empty cell", "Tab ⇧Tab"],
+              ["Submit / place", "Enter"],
+            ].map(([label, keys]) => (
+              <div
+                key={label}
+                className="flex items-center justify-between gap-2"
+              >
+                <dt className="text-[12px] leading-none text-muted">{label}</dt>
+                <dd className="shrink-0 rounded-md border border-line bg-cell-given px-2 py-1 text-[11px] font-bold leading-none tabular-nums text-ink">
+                  {keys}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </aside>
+
+      {/* ── Overlays ─────────────────────────────────────────────── */}
+      {phase === "pre" && <PreGame onStart={() => setPhase("run")} />}
+      {status === "runOver" && (
+        <RunOver
+          summary={summarize(store.getState().state)}
+          onPlayAgain={playAgain}
+          bests={bests}
+          isNewBest={isNewBest ?? undefined}
+        />
+      )}
+    </main>
   );
 }
