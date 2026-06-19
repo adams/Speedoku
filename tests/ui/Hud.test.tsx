@@ -11,7 +11,7 @@ import { createRunStore } from "@/lib/run/store";
 const bank = fixture as BankFile;
 
 describe("Hud", () => {
-  it("renders depth, score and the hints badge", () => {
+  it("renders depth and score", () => {
     const store = createRunStore(bank, {
       seed: 1,
       mode: "hints-on",
@@ -20,7 +20,6 @@ describe("Hud", () => {
     render(<Hud store={store} />);
     expect(screen.getByText(/depth/i)).toBeInTheDocument();
     expect(screen.getByText(/score/i)).toBeInTheDocument();
-    expect(screen.getByText(/hints/i)).toBeInTheDocument();
   });
 
   it("shows the timer from depth 1 (every puzzle is timed)", () => {

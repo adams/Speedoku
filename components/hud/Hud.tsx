@@ -1,6 +1,5 @@
 "use client";
 
-import { Pill } from "@/components/ui/Pill";
 import type { Bests } from "@/lib/data/types";
 import { EMPTY_BESTS } from "@/lib/data/types";
 import { useElapsed } from "@/lib/run/useElapsed";
@@ -18,7 +17,6 @@ export function Hud({
   const depth = useRunSelector(store, (s) => s.state.depth);
   const score = useRunSelector(store, (s) => s.state.score);
   const status = useRunSelector(store, (s) => s.state.status);
-  const mode = useRunSelector(store, (s) => s.state.mode);
   const elapsed = useElapsed(store);
 
   return (
@@ -53,11 +51,6 @@ export function Hud({
           value={bests.bestScore.toLocaleString()}
           align="right"
         />
-      )}
-
-      {/* Hints badge — only in hints-on mode */}
-      {mode === "hints-on" && (
-        <Pill className="absolute -top-2.5 right-4">hints</Pill>
       )}
     </div>
   );

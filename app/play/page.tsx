@@ -7,7 +7,6 @@ import { PreGame } from "@/components/chrome/PreGame";
 import { RunOver } from "@/components/chrome/RunOver";
 import { Hud } from "@/components/hud/Hud";
 import { NumberPad } from "@/components/number-pad/NumberPad";
-import { Pill } from "@/components/ui/Pill";
 import { createLocalAdapter } from "@/lib/data/localAdapter";
 import type { NewBest } from "@/lib/data/types";
 import type { BankFile } from "@/lib/engine/banks";
@@ -86,27 +85,18 @@ export default function PlayPage() {
 
   return (
     <>
-      {/* ── Mobile-only header ─────────────────────────────────────── */}
-      <header className="lg:hidden flex items-center justify-between px-4 pt-4 pb-1">
+      {/* ── Mobile-only header: an explicit back-to-home control ───── */}
+      <header className="lg:hidden flex items-center px-4 pt-4 pb-1">
         <Link
           href="/"
           aria-label="Home"
-          className="text-xl font-extrabold tracking-[-0.02em] select-none leading-none"
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-sm font-semibold text-muted leading-none transition-colors active:text-ink"
         >
-          <span
-            style={{
-              background:
-                "linear-gradient(110deg,var(--color-accent) 0%,var(--color-cyan) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Speed
+          <span aria-hidden="true" className="text-base leading-none">
+            ‹
           </span>
-          <span style={{ color: "var(--color-ink)" }}>oku</span>
+          Home
         </Link>
-        <Pill>hints</Pill>
       </header>
 
       {/* ── Main layout: one centered game stack + a balanced sidebar ── */}
@@ -197,7 +187,6 @@ export default function PlayPage() {
               </span>
               <span style={{ color: "var(--color-ink)" }}>oku</span>
             </Link>
-            <Pill>hints</Pill>
           </div>
 
           {/* Controls guide */}
